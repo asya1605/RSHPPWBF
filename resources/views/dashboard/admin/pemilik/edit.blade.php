@@ -7,7 +7,7 @@
   <div class="bg-white shadow-md rounded-xl p-8 w-full max-w-md border border-gray-200">
     <h2 class="text-lg font-bold text-[#002080] mb-4 text-center">✏️ Edit Pemilik</h2>
 
-    {{-- Tampilkan error validasi --}}
+    {{-- Error Validasi --}}
     @if ($errors->any())
       <div class="bg-red-100 text-red-700 p-3 rounded mb-3">
         <ul class="list-disc ml-5 text-sm">
@@ -18,43 +18,53 @@
       </div>
     @endif
 
-    {{-- Tampilkan pesan sukses --}}
+    {{-- Pesan Sukses --}}
     @if (session('success'))
       <div class="bg-green-100 text-green-700 p-2 rounded mb-3 text-center">
         {{ session('success') }}
       </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.pemilik.update', $pemilik->idpemilik) }}" class="space-y-4">
-      @csrf
+    {{-- FORM UPDATE --}}
+<form action="{{ route('admin.pemilik.update', $pemilik->idpemilik) }}" method="POST" class="space-y-4">
+    @csrf
+    @method('PUT') {{-- wajib biar Laravel ubah POST jadi PUT --}}
 
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Nama</label>
-        <input type="text" name="nama" value="{{ old('nama', $pemilik->nama) }}" class="w-full border rounded-lg px-3 py-2" required>
-      </div>
+    <div>
+        <label>Nama</label>
+        <input type="text" name="nama" value="{{ old('nama', $pemilik->nama) }}" 
+               class="border rounded w-full px-3 py-2" required>
+    </div>
 
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-        <input type="email" name="email" value="{{ old('email', $pemilik->email) }}" class="w-full border rounded-lg px-3 py-2" required>
-      </div>
+    <div>
+        <label>Email</label>
+        <input type="email" name="email" value="{{ old('email', $pemilik->email) }}" 
+               class="border rounded w-full px-3 py-2" required>
+    </div>
 
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">No. WhatsApp</label>
-        <input type="text" name="no_wa" value="{{ old('no_wa', $pemilik->no_wa) }}" class="w-full border rounded-lg px-3 py-2">
-      </div>
+    <div>
+        <label>No. WhatsApp</label>
+        <input type="text" name="no_wa" value="{{ old('no_wa', $pemilik->no_wa) }}" 
+               class="border rounded w-full px-3 py-2">
+    </div>
 
-      <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Alamat</label>
-        <textarea name="alamat" class="w-full border rounded-lg px-3 py-2" required>{{ old('alamat', $pemilik->alamat) }}</textarea>
-      </div>
+    <div>
+        <label>Alamat</label>
+        <textarea name="alamat" class="border rounded w-full px-3 py-2" required>
+            {{ old('alamat', $pemilik->alamat) }}
+        </textarea>
+    </div>
 
-      <div class="flex justify-between">
-        <a href="{{ route('admin.pemilik.index') }}" class="text-gray-600 hover:text-gray-800 text-sm">← Batal</a>
-        <button type="submit" class="bg-[#002080] hover:bg-[#00185e] text-white px-4 py-2 rounded text-sm font-medium">
-          Simpan Perubahan
+    <div class="flex justify-between">
+        <a href="{{ route('admin.pemilik.index') }}" class="text-gray-600 hover:text-gray-800 text-sm">
+            ← Batal
+        </a>
+        <button type="submit" 
+                class="bg-[#002080] hover:bg-[#00185e] text-white px-4 py-2 rounded text-sm font-medium">
+            Simpan Perubahan
         </button>
-      </div>
-    </form>
+    </div>
+</form>
   </div>
 </section>
 @endsection

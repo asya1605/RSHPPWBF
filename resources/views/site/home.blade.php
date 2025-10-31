@@ -3,6 +3,21 @@
 @section('title', 'Home - RSHP Unair')
 
 @section('content')
+
+{{-- ✅ ALERT LOGOUT / NOTIFIKASI --}}
+@if (session('success'))
+  <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg text-center mb-6 max-w-3xl mx-auto">
+    ✅ {{ session('success') }}
+  </div>
+@endif
+
+@if (session('error'))
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg text-center mb-6 max-w-3xl mx-auto">
+    ⚠️ {{ session('error') }}
+  </div>
+@endif
+
+
 <!-- ======== HERO SECTION ======== -->
 <section class="max-w-7xl mx-auto px-6 py-14 flex flex-col md:flex-row items-center gap-10">
   <!-- Left: Info -->

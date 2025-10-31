@@ -64,15 +64,24 @@
               <td class="py-3 px-4 font-medium text-gray-700">{{ $j->idjenis_hewan }}</td>
               <td class="py-3 px-4">{{ $j->nama_jenis_hewan }}</td>
               <td class="py-3 px-4 text-center">
+                {{-- Tombol Ubah --}}
                 <a href="{{ route('admin.jenis-hewan.edit', $j->idjenis_hewan) }}"
                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-xs font-medium transition">
                    ✏️ Ubah
                 </a>
-                <a href="{{ route('admin.jenis-hewan.destroy', $j->idjenis_hewan) }}"
-                   onclick="return confirm('Yakin ingin menghapus jenis ini?')"
-                   class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-xs font-medium transition ml-2">
-                   🗑️ Hapus
-                </a>
+
+                {{-- Tombol Hapus --}}
+                <form action="{{ route('admin.jenis-hewan.destroy', $j->idjenis_hewan) }}" 
+                      method="POST" 
+                      onsubmit="return confirm('Yakin ingin menghapus jenis ini?')" 
+                      class="inline-block ml-2">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" 
+                          class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-xs font-medium transition">
+                    🗑️ Hapus
+                  </button>
+                </form>
               </td>
             </tr>
           @empty

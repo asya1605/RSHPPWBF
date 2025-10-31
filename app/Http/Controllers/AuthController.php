@@ -29,6 +29,7 @@ class AuthController extends Controller
         if ($user && Hash::check($request->password, $user->password)) {
             Auth::login($user);
 
+            // Ambil role aktif user
             $role = DB::table('role_user')
                 ->join('role', 'role.idrole', '=', 'role_user.idrole')
                 ->where('role_user.iduser', $user->iduser)
@@ -54,7 +55,7 @@ class AuthController extends Controller
                 case 'pemilik':
                     return redirect()->route('dashboard.pemilik');
                 default:
-                    return redirect()->route('home');
+                    return redirect()->route('site.home');
             }
         }
 
@@ -62,13 +63,17 @@ class AuthController extends Controller
     }
 
     // 🔹 Logout
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
-        session()->invalidate();
-        session()->regenerateToken();
 
-        return redirect()->route('login')->with('success', 'Anda telah logout.');
+        // Hapus session role dan reset token
+        $request->session()->forget('role');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // ✅ Redirect ke halaman utama (menu publik)
+        return redirect()->route('site.home')->with('success', 'Anda berhasil logout dari sistem.');
     }
 
     // 🔹 Form register

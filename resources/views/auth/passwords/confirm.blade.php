@@ -1,49 +1,41 @@
 @extends('layouts.app')
 
+@section('title', 'Konfirmasi Password - RSHP UNAIR')
+
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Confirm Password') }}</div>
+<section class="min-h-screen flex items-center justify-center bg-[#f5f7ff]">
+  <div class="bg-white shadow-lg rounded-2xl w-full max-w-md p-8 border border-gray-100 text-center">
+    <img src="https://rshp.unair.ac.id/wp-content/uploads/2024/06/UNIVERSITAS-AIRLANGGA-scaled.webp"
+         alt="Logo UNAIR" class="h-16 mx-auto mb-4">
+    <h1 class="text-2xl font-bold text-[#002080] mb-3">Konfirmasi Password</h1>
+    <p class="text-gray-600 mb-6 text-sm">Silakan konfirmasi password Anda sebelum melanjutkan ke halaman berikutnya.</p>
 
-                <div class="card-body">
-                    {{ __('Please confirm your password before continuing.') }}
+    <form method="POST" action="{{ route('password.confirm') }}" class="space-y-5 text-left">
+      @csrf
 
-                    <form method="POST" action="{{ route('password.confirm') }}">
-                        @csrf
+      {{-- Password --}}
+      <div>
+        <label for="password" class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+        <input id="password" type="password" name="password" required
+               class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#002080]/40 focus:outline-none @error('password') border-red-500 @enderror">
+        @error('password')
+          <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+        @enderror
+      </div>
 
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Confirm Password') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+      {{-- Tombol --}}
+      <div class="pt-2 text-center">
+        <button type="submit"
+                class="w-full bg-[#002080] hover:bg-[#00185e] text-white py-2 rounded-lg font-semibold transition">
+          Konfirmasi Password
+        </button>
+        @if (Route::has('password.request'))
+          <a href="{{ route('password.request') }}" class="block mt-3 text-sm text-[#002080] hover:underline">
+            Lupa password?
+          </a>
+        @endif
+      </div>
+    </form>
+  </div>
+</section>
 @endsection

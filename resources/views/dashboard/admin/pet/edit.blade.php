@@ -25,22 +25,30 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.pet.update', $pet->idpet) }}" class="grid md:grid-cols-2 gap-4">
+    {{-- 🧩 FORM UPDATE PET --}}
+    <form action="{{ route('admin.pet.update', $pet->idpet) }}" method="POST" class="grid md:grid-cols-2 gap-4">
       @csrf
+      @method('PUT') {{-- ⚠️ WAJIB agar Laravel ubah POST → PUT --}}
 
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Pet</label>
-        <input type="text" name="nama" value="{{ old('nama', $pet->nama) }}" class="w-full border rounded-lg px-3 py-2" required>
+        <input type="text" name="nama" 
+               value="{{ old('nama', $pet->nama) }}" 
+               class="w-full border rounded-lg px-3 py-2" required>
       </div>
 
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Lahir</label>
-        <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir', $pet->tanggal_lahir) }}" class="w-full border rounded-lg px-3 py-2">
+        <input type="date" name="tanggal_lahir" 
+               value="{{ old('tanggal_lahir', $pet->tanggal_lahir) }}" 
+               class="w-full border rounded-lg px-3 py-2">
       </div>
 
       <div>
         <label class="block text-sm font-semibold text-gray-700 mb-1">Warna / Tanda</label>
-        <input type="text" name="warna_tanda" value="{{ old('warna_tanda', $pet->warna_tanda) }}" class="w-full border rounded-lg px-3 py-2">
+        <input type="text" name="warna_tanda" 
+               value="{{ old('warna_tanda', $pet->warna_tanda) }}" 
+               class="w-full border rounded-lg px-3 py-2">
       </div>
 
       <div>
@@ -75,7 +83,8 @@
 
       <div class="md:col-span-2 flex justify-between mt-4">
         <a href="{{ route('admin.pet.index') }}" class="text-gray-600 hover:text-gray-800 text-sm">← Batal</a>
-        <button type="submit" class="bg-[#002080] hover:bg-[#00185e] text-white px-4 py-2 rounded text-sm font-medium">
+        <button type="submit" 
+                class="bg-[#002080] hover:bg-[#00185e] text-white px-4 py-2 rounded text-sm font-medium">
           Simpan Perubahan
         </button>
       </div>

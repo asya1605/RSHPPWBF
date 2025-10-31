@@ -6,6 +6,7 @@
   <div class="bg-white shadow-md rounded-xl p-8 w-full max-w-md border border-gray-200">
     <h2 class="text-lg font-bold text-[#002080] mb-4 text-center">✏️ Edit Kategori</h2>
 
+    {{-- Error Validasi --}}
     @if ($errors->any())
       <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
         <ul class="list-disc ml-5 text-sm">
@@ -16,19 +17,32 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.kategori.update', $kategori->idkategori) }}">
+    {{-- Pesan Sukses --}}
+    @if (session('success'))
+      <div class="bg-green-100 text-green-700 p-2 rounded mb-3 text-center">
+        {{ session('success') }}
+      </div>
+    @endif
+
+    {{-- 🧩 FORM UPDATE --}}
+    <form action="{{ route('admin.kategori.update', $kategori->idkategori) }}" method="POST">
       @csrf
+      @method('PUT') {{-- ⚠️ Penting: ubah POST → PUT agar cocok dengan route resource --}}
 
       <div class="mb-4">
         <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Kategori</label>
-        <input type="text" name="nama_kategori"
+        <input type="text" 
+               name="nama_kategori"
                value="{{ old('nama_kategori', $kategori->nama_kategori) }}"
-               class="w-full border rounded-lg px-3 py-2" required>
+               class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#002080]/30" 
+               required>
       </div>
 
       <div class="flex justify-between mt-4">
-        <a href="{{ route('admin.kategori.index') }}" class="text-gray-600 hover:text-gray-800 text-sm">← Batal</a>
-        <button type="submit" class="bg-[#002080] hover:bg-[#00185e] text-white px-4 py-2 rounded text-sm font-medium">
+        <a href="{{ route('admin.kategori.index') }}" 
+           class="text-gray-600 hover:text-gray-800 text-sm">← Batal</a>
+        <button type="submit" 
+                class="bg-[#002080] hover:bg-[#00185e] text-white px-4 py-2 rounded text-sm font-medium">
           Simpan Perubahan
         </button>
       </div>
