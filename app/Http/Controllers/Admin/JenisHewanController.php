@@ -10,7 +10,33 @@ use Illuminate\Support\Facades\DB;
 class JenisHewanController extends Controller
 {
     /**
-     * Tampilkan semua data jenis hewan
+     * 🔹 Helper: Validasi input
+     */
+    private function validateJenisHewan($request)
+    {
+        return $request->validate([
+            'nama_jenis_hewan' => 'required|string|max:100|unique:jenis_hewan,nama_jenis_hewan'
+        ]);
+    }
+
+    /**
+     * 🔹 Helper: Format nama jenis hewan agar huruf kapital di awal
+     */
+    private function formatNamaJenisHewan($nama)
+    {
+        return ucwords(strtolower(trim($nama)));
+    }
+
+    /**
+     * 🔹 Helper: Simpan data ke database
+     */
+    private function createJenisHewan($data)
+    {
+        JenisHewan::create($data);
+    }
+
+    /**
+     * 🔸 Tampilkan semua data jenis hewan
      */
     public function index()
     {
@@ -19,7 +45,7 @@ class JenisHewanController extends Controller
     }
 
     /**
-     * Form tambah jenis hewan
+     * 🔸 Form tambah jenis hewan
      */
     public function create()
     {
@@ -27,24 +53,25 @@ class JenisHewanController extends Controller
     }
 
     /**
-     * Simpan jenis hewan baru ke database
+     * 🔸 Simpan jenis hewan baru ke database
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'nama_jenis_hewan' => 'required|string|max:100|unique:jenis_hewan,nama_jenis_hewan'
-        ]);
+        // Gunakan helper validasi
+        $data = $this->validateJenisHewan($request);
 
-        JenisHewan::create([
-            'nama_jenis_hewan' => $request->nama_jenis_hewan
-        ]);
+        // Format nama
+        $data['nama_jenis_hewan'] = $this->formatNamaJenisHewan($data['nama_jenis_hewan']);
+
+        // Simpan ke database
+        $this->createJenisHewan($data);
 
         return redirect()->route('admin.jenis-hewan.index')
                          ->with('success', '✅ Jenis hewan berhasil ditambahkan.');
     }
 
     /**
-     * Tampilkan detail 1 jenis hewan (opsional, agar tidak error resource route)
+     * 🔸 Tampilkan detail 1 jenis hewan
      */
     public function show($id)
     {
@@ -55,14 +82,11 @@ class JenisHewanController extends Controller
                              ->with('danger', '❌ Jenis hewan tidak ditemukan.');
         }
 
-        // Kalau kamu belum punya halaman show, redirect aja ke index
         return redirect()->route('admin.jenis-hewan.index');
-        // Atau nanti bisa dibuat view detail-nya
-        // return view('dashboard.admin.jenis-hewan.show', compact('jenis'));
     }
 
     /**
-     * Form edit data jenis hewan
+     * 🔸 Form edit data jenis hewan
      */
     public function edit($id)
     {
@@ -71,7 +95,7 @@ class JenisHewanController extends Controller
     }
 
     /**
-     * Update data jenis hewan
+     * 🔸 Update data jenis hewan
      */
     public function update(Request $request, $id)
     {
@@ -79,8 +103,10 @@ class JenisHewanController extends Controller
             'nama_jenis_hewan' => 'required|string|max:100|unique:jenis_hewan,nama_jenis_hewan,' . $id . ',idjenis_hewan'
         ]);
 
+        $namaBaru = $this->formatNamaJenisHewan($request->nama_jenis_hewan);
+
         JenisHewan::where('idjenis_hewan', $id)->update([
-            'nama_jenis_hewan' => $request->nama_jenis_hewan
+            'nama_jenis_hewan' => $namaBaru
         ]);
 
         return redirect()->route('admin.jenis-hewan.index')
@@ -88,7 +114,7 @@ class JenisHewanController extends Controller
     }
 
     /**
-     * Hapus data jenis hewan
+     * 🔸 Hapus data jenis hewan
      */
     public function destroy($id)
     {

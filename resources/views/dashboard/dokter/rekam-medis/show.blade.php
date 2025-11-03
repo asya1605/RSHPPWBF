@@ -4,8 +4,8 @@
 
 @section('content')
 <section class="min-h-[90vh] bg-[#f5f7ff] py-10 px-6">
-
   <div class="max-w-5xl mx-auto">
+    
     {{-- HEADER --}}
     <h1 class="text-2xl font-bold text-[#002080] mb-3">
       🩺 Detail Rekam Medis #{{ $rekam->idrekam_medis }}

@@ -14,13 +14,12 @@
     </div>
   </nav>
 
-  {{-- PAGE CONTAINER --}}
   <div class="max-w-6xl mx-auto py-12 px-6">
 
     <h1 class="text-2xl font-bold text-[#002080] mb-8 text-center">⚙️ Manajemen Role User</h1>
 
     {{-- ALERT MESSAGE --}}
-    @foreach (['success'=>'green','info'=>'blue','danger'=>'red'] as $type=>$color)
+    @foreach (['success'=>'green','danger'=>'red','info'=>'blue'] as $type=>$color)
       @if(session($type))
         <div class="bg-{{ $color }}-100 border border-{{ $color }}-400 text-{{ $color }}-700 p-3 rounded mb-5 text-center shadow-sm">
           {{ session($type) }}
@@ -39,7 +38,7 @@
         <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
           <div>
             <label class="block mb-1 text-sm font-semibold text-gray-700">Pilih User</label>
-            <select name="iduser" required class="w-full border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:ring-2 focus:ring-[#002080]/30 focus:outline-none">
+            <select name="iduser" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#002080]/30">
               <option value="">-- pilih user --</option>
               @foreach($users as $u)
                 <option value="{{ $u->iduser }}">{{ $u->nama }} ({{ $u->email }})</option>
@@ -49,7 +48,7 @@
 
           <div>
             <label class="block mb-1 text-sm font-semibold text-gray-700">Pilih Role</label>
-            <select name="idrole" required class="w-full border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus:ring-2 focus:ring-[#002080]/30 focus:outline-none">
+            <select name="idrole" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#002080]/30">
               <option value="">-- pilih role --</option>
               @foreach($roles as $r)
                 <option value="{{ $r->idrole }}">{{ $r->nama_role }}</option>
@@ -106,7 +105,15 @@
                       @else
                         <a href="{{ route('admin.role-user.deactivate', [$u->iduser, $role->idrole]) }}" class="bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded text-xs">Nonaktifkan</a>
                       @endif
-                      <a href="{{ route('admin.role-user.destroy', [$u->iduser, $role->idrole]) }}" onclick="return confirm('Yakin ingin menghapus role ini?')" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Hapus</a>
+
+                      <form action="{{ route('admin.role-user.destroyConfirm') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus role ini?')">
+                        @csrf
+                        <input type="hidden" name="iduser" value="{{ $u->iduser }}">
+                        <input type="hidden" name="idrole" value="{{ $role->idrole }}">
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">
+                          Hapus
+                        </button>
+                      </form>
                     </div>
                   </div>
                 @empty

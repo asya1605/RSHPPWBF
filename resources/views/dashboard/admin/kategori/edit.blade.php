@@ -1,12 +1,12 @@
 @extends('layouts.admin')
-@section('title', 'Edit Kategori')
+
+@section('title', 'Edit Kategori - RSHP UNAIR')
 
 @section('content')
-<section class="min-h-[90vh] bg-[#f5f7ff] flex justify-center items-center">
+<section class="min-h-[90vh] bg-[#f5f7ff] flex justify-center items-center px-4 py-10">
   <div class="bg-white shadow-md rounded-xl p-8 w-full max-w-md border border-gray-200">
-    <h2 class="text-lg font-bold text-[#002080] mb-4 text-center">✏️ Edit Kategori</h2>
+    <h2 class="text-lg font-bold text-[#002080] mb-5 text-center">✏️ Edit Kategori</h2>
 
-    {{-- Error Validasi --}}
     @if ($errors->any())
       <div class="bg-red-100 text-red-700 p-3 rounded mb-4">
         <ul class="list-disc ml-5 text-sm">
@@ -17,33 +17,24 @@
       </div>
     @endif
 
-    {{-- Pesan Sukses --}}
-    @if (session('success'))
-      <div class="bg-green-100 text-green-700 p-2 rounded mb-3 text-center">
-        {{ session('success') }}
-      </div>
-    @endif
-
-    {{-- 🧩 FORM UPDATE --}}
-    <form action="{{ route('admin.kategori.update', $kategori->idkategori) }}" method="POST">
+    <form method="POST" action="{{ route('admin.kategori.update', $kategori->idkategori) }}" class="space-y-5">
       @csrf
-      @method('PUT') {{-- ⚠️ Penting: ubah POST → PUT agar cocok dengan route resource --}}
+      @method('PUT')
 
-      <div class="mb-4">
-        <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Kategori</label>
-        <input type="text" 
-               name="nama_kategori"
+      <div>
+        <label for="nama_kategori" class="block text-sm font-semibold text-gray-700 mb-1">
+          Nama Kategori
+        </label>
+        <input id="nama_kategori" type="text" name="nama_kategori"
                value="{{ old('nama_kategori', $kategori->nama_kategori) }}"
-               class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#002080]/30" 
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#002080]/30"
                required>
       </div>
 
-      <div class="flex justify-between mt-4">
-        <a href="{{ route('admin.kategori.index') }}" 
-           class="text-gray-600 hover:text-gray-800 text-sm">← Batal</a>
-        <button type="submit" 
-                class="bg-[#002080] hover:bg-[#00185e] text-white px-4 py-2 rounded text-sm font-medium">
-          Simpan Perubahan
+      <div class="flex justify-between items-center pt-4">
+        <a href="{{ route('admin.kategori.index') }}" class="text-gray-600 hover:text-gray-800 text-sm">← Batal</a>
+        <button type="submit" class="bg-[#002080] hover:bg-[#00185e] text-white px-5 py-2 rounded text-sm font-medium transition">
+          Update
         </button>
       </div>
     </form>

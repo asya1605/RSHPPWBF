@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\DB;
 
 class RekamMedisController extends Controller
 {
+    // ==========================
+    // INDEX (lihat daftar rekam medis)
+    // ==========================
     public function index(Request $request)
     {
         $selectedDate = $request->query('date', date('Y-m-d'));
@@ -35,6 +38,35 @@ class RekamMedisController extends Controller
         return view('dashboard.dokter.rekam-medis.index', compact('list', 'selectedDate'));
     }
 
+    // ==========================
+    // CREATE (form input rekam medis baru)
+    // ==========================
+    public function create()
+    {
+        $pets = DB::table('pet as p')
+            ->join('pemilik as pem', 'pem.idpemilik', '=', 'p.idpemilik')
+            ->select('p.idpet', 'p.nama as nama_pet', 'pem.nama as nama_pemilik')
+            ->orderBy('pem.nama')
+            ->get();
+
+        return view('dashboard.dokter.rekam-medis.create', compact('pets'));
+    }
+
+    // ==========================
+    // STORE (proses simpan ke database)
+    // ==========================
+    public function store(Request $request)
+    {
+        $this->validateRekamMedis($request);
+        $this->createRekamMedis($request);
+
+        return redirect()->route('dokter.rekam-medis.index')
+            ->with('ok', 'Rekam medis baru berhasil ditambahkan!');
+    }
+
+    // ==========================
+    // SHOW (detail rekam medis)
+    // ==========================
     public function show($id)
     {
         $rekam = DB::table('rekam_medis as rm')
@@ -63,5 +95,85 @@ class RekamMedisController extends Controller
             ->get();
 
         return view('dashboard.dokter.rekam-medis.show', compact('rekam', 'detailTindakan'));
+    }
+
+    // ==========================
+    // EDIT (form ubah data)
+    // ==========================
+    public function edit($id)
+    {
+        $rekam = DB::table('rekam_medis')->where('idrekam_medis', $id)->first();
+        if (!$rekam) {
+            abort(404, 'Data tidak ditemukan.');
+        }
+
+        $pets = DB::table('pet as p')
+            ->join('pemilik as pem', 'pem.idpemilik', '=', 'p.idpemilik')
+            ->select('p.idpet', 'p.nama as nama_pet', 'pem.nama as nama_pemilik')
+            ->get();
+
+        return view('dashboard.dokter.rekam-medis.edit', compact('rekam', 'pets'));
+    }
+
+    // ==========================
+    // UPDATE (proses ubah data)
+    // ==========================
+    public function update(Request $request, $id)
+    {
+        $this->validateRekamMedis($request);
+
+        DB::table('rekam_medis')
+            ->where('idrekam_medis', $id)
+            ->update([
+                'idpet' => $request->idpet,
+                'anamnesa' => $this->formatText($request->anamnesa),
+                'temuan_klinis' => $this->formatText($request->temuan_klinis),
+                'diagnosa' => $this->formatText($request->diagnosa),
+                'updated_at' => now(),
+            ]);
+
+        return redirect()->route('dokter.rekam-medis.index')
+            ->with('ok', 'Data rekam medis berhasil diperbarui!');
+    }
+
+    // ==========================
+    // VALIDATION
+    // ==========================
+    private function validateRekamMedis($request)
+    {
+        $request->validate([
+            'idpet' => 'required|integer',
+            'anamnesa' => 'required|string|max:255',
+            'temuan_klinis' => 'nullable|string|max:255',
+            'diagnosa' => 'required|string|max:255',
+        ], [
+            'idpet.required' => 'Pilih hewan terlebih dahulu.',
+            'anamnesa.required' => 'Anamnesa wajib diisi.',
+            'diagnosa.required' => 'Diagnosa wajib diisi.',
+        ]);
+    }
+
+    // ==========================
+    // HELPER - Insert ke database
+    // ==========================
+    private function createRekamMedis($request)
+    {
+        DB::table('rekam_medis')->insert([
+            'idpet' => $request->idpet,
+            'idreservasi_dokter' => null,
+            'anamnesa' => $this->formatText($request->anamnesa),
+            'temuan_klinis' => $this->formatText($request->temuan_klinis),
+            'diagnosa' => $this->formatText($request->diagnosa),
+            'created_at' => now(),
+        ]);
+    }
+
+    // ==========================
+    // HELPER - Format teks
+    // ==========================
+    private function formatText($text)
+    {
+        if (!$text) return null;
+        return ucfirst(strtolower(trim($text)));
     }
 }

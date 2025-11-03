@@ -3,24 +3,49 @@
 namespace App\Http\Controllers\Pemilik;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class RekamMedisController extends Controller
 {
-    public function index()
+    // ==========================
+    // INDEX (Daftar Rekam Medis Pemilik)
+    // ==========================
+    public function index(Request $request)
     {
-        $idpemilik = Auth::user()->iduser;
+        $pemilik = DB::table('pemilik')
+            ->where('email', Auth::user()->email)
+            ->first();
+
+        if (!$pemilik) {
+            return view('dashboard.pemilik.rekam-medis.index', ['rekamMedis' => collect()]);
+        }
+
+        // filter opsional berdasarkan tanggal atau pet
+        $petId = $request->query('idpet');
+        $tanggal = $request->query('tanggal');
+
         $rekamMedis = DB::table('rekam_medis as rm')
             ->join('pet as p', 'p.idpet', '=', 'rm.idpet')
-            ->where('p.idpemilik', $idpemilik)
+            ->where('p.idpemilik', $pemilik->idpemilik)
+            ->when($petId, fn($q) => $q->where('rm.idpet', $petId))
+            ->when($tanggal, fn($q) => $q->whereDate('rm.created_at', $tanggal))
             ->select('rm.*', 'p.nama as nama_pet')
             ->orderBy('rm.created_at', 'desc')
             ->get();
 
-        return view('dashboard.pemilik.rekam-medis.index', compact('rekamMedis'));
+        $pets = DB::table('pet')
+            ->where('idpemilik', $pemilik->idpemilik)
+            ->select('idpet', 'nama')
+            ->get();
+
+        return view('dashboard.pemilik.rekam-medis.index', compact('rekamMedis', 'pets', 'petId', 'tanggal'));
     }
 
+    // ==========================
+    // SHOW (Detail Rekam Medis)
+    // ==========================
     public function show($id)
     {
         $header = DB::table('rekam_medis as rm')
@@ -29,6 +54,10 @@ class RekamMedisController extends Controller
             ->select('rm.*', 'p.nama as nama_pet', 'pm.nama as nama_pemilik')
             ->where('rm.idrekam_medis', $id)
             ->first();
+
+        if (!$header) {
+            abort(404, 'Rekam medis tidak ditemukan.');
+        }
 
         $detail = DB::table('detail_rekam_medis as d')
             ->join('kode_tindakan_terapi as k', 'k.idkode_tindakan_terapi', '=', 'd.idkode_tindakan_terapi')
@@ -39,5 +68,60 @@ class RekamMedisController extends Controller
             ->get();
 
         return view('dashboard.pemilik.rekam-medis.show', compact('header', 'detail'));
+    }
+
+    // ==========================
+    // OPTIONAL (Form Tambah Keluhan Awal)
+    // ==========================
+    public function create()
+    {
+        $pemilik = DB::table('pemilik')
+            ->where('email', Auth::user()->email)
+            ->first();
+
+        $pets = DB::table('pet')
+            ->where('idpemilik', $pemilik->idpemilik)
+            ->get();
+
+        return view('dashboard.pemilik.rekam-medis.create', compact('pets'));
+    }
+
+    // ==========================
+    // STORE (Simpan Keluhan Awal Pemilik)
+    // ==========================
+    public function store(Request $request)
+    {
+        $this->validateRekam($request);
+
+        DB::table('keluhan_awal')->insert([
+            'idpet' => $request->idpet,
+            'keluhan' => $this->formatText($request->keluhan),
+            'created_at' => now(),
+        ]);
+
+        return redirect()->route('pemilik.rekam.index')
+            ->with('ok', 'Keluhan awal berhasil dikirim. Dokter akan meninjau!');
+    }
+
+    // ==========================
+    // VALIDATION
+    // ==========================
+    private function validateRekam($request)
+    {
+        $request->validate([
+            'idpet' => 'required|integer',
+            'keluhan' => 'required|string|min:5|max:255',
+        ], [
+            'idpet.required' => 'Pilih hewan yang akan diperiksa.',
+            'keluhan.required' => 'Tuliskan keluhan awal hewan Anda.',
+        ]);
+    }
+
+    // ==========================
+    // HELPER - Format Text
+    // ==========================
+    private function formatText($text)
+    {
+        return ucfirst(strtolower(trim($text)));
     }
 }

@@ -4,78 +4,103 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Models\RekamMedis;
 use App\Models\Pet;
 use App\Models\User;
 
 class RekamMedisController extends Controller
 {
-    public function index()
+    /** 🔹 Helper untuk pesan redirect */
+    private function redirectMsg($route, $message, $type = 'success')
     {
-        $data = RekamMedis::with(['pet'])->get();
-        return view('dashboard.admin.rekam-medis.index', compact('data'));
+        return redirect()->route($route)->with($type, $message);
     }
 
+    /** 🔹 Index - tampilkan semua rekam medis */
+    public function index()
+    {
+        try {
+            $data = RekamMedis::with(['pet.pemilik', 'dokter'])->get();
+            return view('dashboard.admin.rekam-medis.index', compact('data'));
+        } catch (\Throwable $e) {
+            Log::error('Gagal load rekam medis: ' . $e->getMessage());
+            return back()->with('danger', 'Gagal memuat data rekam medis.');
+        }
+    }
+
+    /** 🔹 Form tambah */
     public function create()
     {
-        $pet = Pet::all();
-        $dokter = User::whereHas('roles', function ($q) {
-            $q->where('idrole', 3); // ambil user yang punya role dokter
-        })->get();
+        $pet = Pet::with('pemilik')->get();
+        $dokter = User::whereHas('roles', fn($q) => $q->where('idrole', 3))->get();
 
         return view('dashboard.admin.rekam-medis.create', compact('pet', 'dokter'));
     }
 
-    public function store(Request $request)
+    /** 🔹 Simpan data baru */
+    public function store(Request $r)
     {
-        $request->validate([
+        $r->validate([
             'idreservasi_dokter' => 'required|integer',
-            'idpet' => 'required|integer',
+            'idpet' => 'required|integer|exists:pet,idpet',
+            'dokter_pemeriksa' => 'required|integer|exists:user,iduser',
+            'anamnesa' => 'nullable|string',
+            'temuan_klinis' => 'nullable|string',
             'diagnosa' => 'required|string|max:255',
-            'terapi' => 'required|string|max:255',
+            'terapi' => 'nullable|string|max:255',
         ]);
 
-        RekamMedis::create($request->all());
-        return redirect()->route('admin.rekam-medis.index')->with('success', 'Data berhasil disimpan.');
+        try {
+            RekamMedis::create($r->all());
+            return $this->redirectMsg('admin.rekam-medis.index', '✅ Rekam Medis berhasil ditambahkan.');
+        } catch (\Throwable $e) {
+            Log::error('Insert RekamMedis error: ' . $e->getMessage());
+            return back()->withInput()->with('danger', 'Gagal menyimpan data.');
+        }
     }
 
+    /** 🔹 Form edit */
     public function edit($id)
     {
         $item = RekamMedis::findOrFail($id);
         $pet = Pet::all();
-        $dokter = User::whereHas('roles', function ($q) {
-            $q->where('role_user.idrole', 3); // ✅ tambahkan nama tabel pivot
-        })->get();
+        $dokter = User::whereHas('roles', fn($q) => $q->where('idrole', 3))->get();
 
         return view('dashboard.admin.rekam-medis.edit', compact('item', 'pet', 'dokter'));
-}
+    }
 
-    public function update(Request $request, $id)
+    /** 🔹 Update data */
+    public function update(Request $r, $id)
     {
         $item = RekamMedis::findOrFail($id);
-
-        $request->validate([
-            'idpet' => 'required|integer',
-            'dokter_pemeriksa' => 'required|integer',
+        $r->validate([
+            'idpet' => 'required|integer|exists:pet,idpet',
+            'dokter_pemeriksa' => 'required|integer|exists:user,iduser',
             'anamnesa' => 'nullable|string',
             'temuan_klinis' => 'nullable|string',
             'diagnosa' => 'required|string|max:255',
+            'terapi' => 'nullable|string|max:255',
         ]);
 
-        $item->update([
-            'idpet' => $request->idpet,
-            'dokter_pemeriksa' => $request->dokter_pemeriksa,
-            'anamnesa' => $request->anamnesa,
-            'temuan_klinis' => $request->temuan_klinis,
-            'diagnosa' => $request->diagnosa,
-        ]);
-
-        return redirect()->route('admin.rekam-medis.index')->with('success', 'Data berhasil diperbarui.');
+        try {
+            $item->update($r->all());
+            return $this->redirectMsg('admin.rekam-medis.index', '✅ Data Rekam Medis berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            Log::error('Update RekamMedis error: ' . $e->getMessage());
+            return back()->withInput()->with('danger', 'Gagal memperbarui data.');
+        }
     }
 
+    /** 🔹 Hapus data */
     public function destroy($id)
     {
-        RekamMedis::destroy($id);
-        return redirect()->route('admin.rekam-medis.index')->with('danger', 'Data berhasil dihapus.');
+        try {
+            RekamMedis::destroy($id);
+            return back()->with('success', '🗑️ Data Rekam Medis berhasil dihapus.');
+        } catch (\Throwable $e) {
+            Log::error('Delete RekamMedis error: ' . $e->getMessage());
+            return back()->with('danger', 'Gagal menghapus data.');
+        }
     }
 }

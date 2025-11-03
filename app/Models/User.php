@@ -10,9 +10,9 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $table = 'user';          // ✅ nama tabel kamu
-    protected $primaryKey = 'iduser';   // ✅ primary key kamu
-    public $timestamps = false;         // ✅ karena tabel kamu tidak ada created_at/updated_at
+    protected $table = 'user';          
+    protected $primaryKey = 'iduser';   
+    public $timestamps = false;         
 
     protected $fillable = [
         'nama',

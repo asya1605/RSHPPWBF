@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class RasHewanController extends Controller
 {
     /**
-     * Menampilkan daftar ras hewan
+     * Menampilkan daftar ras hewan (dengan join jenis hewan)
      */
     public function index()
     {
@@ -18,7 +18,6 @@ class RasHewanController extends Controller
             ->select(
                 'ras_hewan.idras_hewan',
                 'ras_hewan.nama_ras',
-                'jenis_hewan.idjenis_hewan',
                 'jenis_hewan.nama_jenis_hewan'
             )
             ->orderBy('jenis_hewan.nama_jenis_hewan')
@@ -29,7 +28,7 @@ class RasHewanController extends Controller
     }
 
     /**
-     * Form tambah ras hewan baru
+     * Form tambah ras hewan
      */
     public function create()
     {
@@ -38,12 +37,12 @@ class RasHewanController extends Controller
     }
 
     /**
-     * Simpan data ras baru
+     * Simpan data ras hewan baru
      */
     public function store(Request $request)
     {
         $request->validate([
-            'nama_ras' => 'required|string|max:100',
+            'nama_ras' => 'required|string|max:100|unique:ras_hewan,nama_ras',
             'idjenis_hewan' => 'required|integer|exists:jenis_hewan,idjenis_hewan',
         ]);
 
@@ -75,12 +74,12 @@ class RasHewanController extends Controller
     }
 
     /**
-     * Update data ras
+     * Update data ras hewan
      */
     public function update(Request $request, $id)
     {
         $request->validate([
-            'nama_ras' => 'required|string|max:100',
+            'nama_ras' => 'required|string|max:100|unique:ras_hewan,nama_ras,' . $id . ',idras_hewan',
             'idjenis_hewan' => 'required|integer|exists:jenis_hewan,idjenis_hewan',
         ]);
 
@@ -93,7 +92,7 @@ class RasHewanController extends Controller
 
         return redirect()
             ->route('admin.ras-hewan.index')
-            ->with('success', '✅ Data ras hewan berhasil diperbarui!');
+            ->with('success', '✏️ Data ras hewan berhasil diperbarui!');
     }
 
     /**
@@ -101,16 +100,23 @@ class RasHewanController extends Controller
      */
     public function destroy($id)
     {
-        $deleted = DB::table('ras_hewan')->where('idras_hewan', $id)->delete();
+        try {
+            $used = DB::table('pet')->where('idras_hewan', $id)->exists();
+            if ($used) {
+                return redirect()
+                    ->route('admin.ras-hewan.index')
+                    ->with('danger', '⚠️ Tidak dapat dihapus: masih digunakan pada data Pet.');
+            }
 
-        if ($deleted) {
+            DB::table('ras_hewan')->where('idras_hewan', $id)->delete();
+
             return redirect()
                 ->route('admin.ras-hewan.index')
                 ->with('success', '🗑️ Ras hewan berhasil dihapus!');
-        } else {
+        } catch (\Throwable $e) {
             return redirect()
                 ->route('admin.ras-hewan.index')
-                ->with('danger', '❌ Gagal menghapus ras hewan.');
+                ->with('danger', '❌ Terjadi kesalahan saat menghapus ras hewan.');
         }
     }
 }

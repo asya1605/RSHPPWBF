@@ -5,18 +5,30 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
 
 class PemilikController extends Controller
 {
+    /** Helper flash message */
+    private function redirectWithMessage($route, $message, $type = 'success')
+    {
+        return redirect()->route($route)->with($type, $message);
+    }
+
     /** Tampilkan semua data pemilik */
     public function index()
     {
-        $pemilikList = DB::table('pemilik')
-            ->select('idpemilik', 'nama', 'email', 'no_wa', 'alamat')
-            ->orderBy('nama')
-            ->get();
-
-        return view('dashboard.admin.pemilik.index', compact('pemilikList'));
+        try {
+            $pemilikList = DB::table('pemilik')
+                ->select('idpemilik', 'nama', 'email', 'no_wa', 'alamat')
+                ->orderBy('nama')
+                ->get();
+            return view('dashboard.admin.pemilik.index', compact('pemilikList'));
+        } catch (QueryException $e) {
+            Log::error("Error fetch pemilik: " . $e->getMessage());
+            return back()->with('danger', 'Gagal memuat data pemilik.');
+        }
     }
 
     /** Form tambah pemilik */
@@ -34,6 +46,9 @@ class PemilikController extends Controller
             'password' => 'required|min:5',
             'no_wa' => 'required|string|max:20',
             'alamat' => 'required|string|max:255',
+        ], [
+            'email.unique' => 'Email ini sudah digunakan!',
+            'password.min' => 'Password minimal 5 karakter.',
         ]);
 
         try {
@@ -46,22 +61,15 @@ class PemilikController extends Controller
                     'alamat' => $validated['alamat'],
                 ]);
 
-                // Pastikan role 'Pemilik' ada
                 $role = DB::table('role')->where('nama_role', 'Pemilik')->first();
-                if (!$role) {
-                    $idrole = DB::table('role')->insertGetId(['nama_role' => 'Pemilik']);
-                } else {
-                    $idrole = $role->idrole;
-                }
+                $idrole = $role ? $role->idrole : DB::table('role')->insertGetId(['nama_role' => 'Pemilik']);
 
-                // Buat user baru di tabel user
                 $iduser = DB::table('user')->insertGetId([
                     'nama' => $validated['nama'],
                     'email' => $validated['email'],
                     'password' => bcrypt($validated['password']),
                 ]);
 
-                // Assign role ke user
                 DB::table('role_user')->insert([
                     'iduser' => $iduser,
                     'idrole' => $idrole,
@@ -69,21 +77,25 @@ class PemilikController extends Controller
                 ]);
             });
 
-            return redirect()->route('admin.pemilik.index')->with('success', 'Pemilik baru berhasil ditambahkan.');
+            return $this->redirectWithMessage('admin.pemilik.index', '✅ Pemilik baru berhasil ditambahkan.');
         } catch (\Throwable $e) {
-            return back()->withErrors(['error' => 'Gagal menambahkan data: ' . $e->getMessage()]);
+            Log::error("Error insert pemilik: " . $e->getMessage());
+            return back()->withInput()->with('danger', 'Gagal menambahkan data.');
         }
     }
 
     /** Form edit */
     public function edit($id)
     {
-        $pemilik = DB::table('pemilik')->where('idpemilik', $id)->first();
-        if (!$pemilik) {
-            return redirect()->route('admin.pemilik.index')->with('danger', 'Data tidak ditemukan.');
+        try {
+            $pemilik = DB::table('pemilik')->where('idpemilik', $id)->first();
+            if (!$pemilik) {
+                return $this->redirectWithMessage('admin.pemilik.index', 'Data tidak ditemukan.', 'danger');
+            }
+            return view('dashboard.admin.pemilik.edit', compact('pemilik'));
+        } catch (\Throwable $e) {
+            return $this->redirectWithMessage('admin.pemilik.index', 'Terjadi kesalahan memuat data.', 'danger');
         }
-
-        return view('dashboard.admin.pemilik.edit', compact('pemilik'));
     }
 
     /** Update data */
@@ -98,9 +110,10 @@ class PemilikController extends Controller
 
         try {
             DB::table('pemilik')->where('idpemilik', $id)->update($validated);
-            return redirect()->route('admin.pemilik.index')->with('success', 'Data pemilik berhasil diperbarui.');
+            return $this->redirectWithMessage('admin.pemilik.index', '✅ Data pemilik berhasil diperbarui.');
         } catch (\Throwable $e) {
-            return back()->withErrors(['error' => 'Gagal update: ' . $e->getMessage()]);
+            Log::error("Error update pemilik: " . $e->getMessage());
+            return back()->withInput()->with('danger', 'Gagal memperbarui data.');
         }
     }
 
@@ -114,9 +127,10 @@ class PemilikController extends Controller
             }
 
             DB::table('pemilik')->where('idpemilik', $id)->delete();
-            return back()->with('success', 'Data pemilik berhasil dihapus.');
+            return back()->with('success', '🗑️ Data pemilik berhasil dihapus.');
         } catch (\Throwable $e) {
-            return back()->with('danger', 'Gagal menghapus data: ' . $e->getMessage());
+            Log::error("Error delete pemilik: " . $e->getMessage());
+            return back()->with('danger', 'Gagal menghapus data.');
         }
     }
 }

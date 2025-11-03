@@ -5,34 +5,42 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PetController extends Controller
 {
-    /**
-     * Menampilkan semua data Pet (join pemilik, ras, dan jenis)
-     */
-    public function index()
+    /** Helper pesan redirect */
+    private function redirectMsg($route, $msg, $type = 'success')
     {
-        $pets = DB::table('pet')
-            ->join('pemilik', 'pet.idpemilik', '=', 'pemilik.idpemilik')
-            ->join('ras_hewan', 'pet.idras_hewan', '=', 'ras_hewan.idras_hewan')
-            ->join('jenis_hewan', 'ras_hewan.idjenis_hewan', '=', 'jenis_hewan.idjenis_hewan')
-            ->select(
-                'pet.*',
-                'pemilik.nama as nama_pemilik',
-                'pemilik.email as email_pemilik',
-                'ras_hewan.nama_ras',
-                'jenis_hewan.nama_jenis_hewan'
-            )
-            ->orderBy('pet.nama')
-            ->get();
-
-        return view('dashboard.admin.pet.index', compact('pets'));
+        return redirect()->route($route)->with($type, $msg);
     }
 
-    /**
-     * Form tambah data Pet
-     */
+    /** 🔹 Tampilkan semua data Pet */
+    public function index()
+    {
+        try {
+            $pets = DB::table('pet')
+                ->join('pemilik', 'pet.idpemilik', '=', 'pemilik.idpemilik')
+                ->join('ras_hewan', 'pet.idras_hewan', '=', 'ras_hewan.idras_hewan')
+                ->join('jenis_hewan', 'ras_hewan.idjenis_hewan', '=', 'jenis_hewan.idjenis_hewan')
+                ->select(
+                    'pet.*',
+                    'pemilik.nama as nama_pemilik',
+                    'pemilik.email as email_pemilik',
+                    'ras_hewan.nama_ras',
+                    'jenis_hewan.nama_jenis_hewan'
+                )
+                ->orderBy('pet.nama')
+                ->get();
+
+            return view('dashboard.admin.pet.index', compact('pets'));
+        } catch (\Throwable $e) {
+            Log::error('Gagal menampilkan pet: ' . $e->getMessage());
+            return back()->with('danger', 'Gagal memuat data pet.');
+        }
+    }
+
+    /** 🔹 Form tambah Pet */
     public function create()
     {
         $pemilikList = DB::table('pemilik')->orderBy('nama')->get();
@@ -45,41 +53,41 @@ class PetController extends Controller
         return view('dashboard.admin.pet.create', compact('pemilikList', 'rasList'));
     }
 
-    /**
-     * Simpan data baru Pet
-     */
-    public function store(Request $request)
+    /** 🔹 Simpan data baru */
+    public function store(Request $r)
     {
-        $request->validate([
+        $r->validate([
             'nama' => 'required|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'warna_tanda' => 'nullable|string|max:255',
             'jenis_kelamin' => 'required|in:M,F',
-            'idpemilik' => 'required|integer|exists:pemilik,idpemilik',
-            'idras_hewan' => 'required|integer|exists:ras_hewan,idras_hewan',
+            'idpemilik' => 'required|exists:pemilik,idpemilik',
+            'idras_hewan' => 'required|exists:ras_hewan,idras_hewan',
         ]);
 
-        DB::table('pet')->insert([
-            'nama' => $request->nama,
-            'tanggal_lahir' => $request->tanggal_lahir,
-            'warna_tanda' => $request->warna_tanda,
-            'jenis_kelamin' => $request->jenis_kelamin,
-            'idpemilik' => $request->idpemilik,
-            'idras_hewan' => $request->idras_hewan,
-        ]);
+        try {
+            DB::table('pet')->insert([
+                'nama' => $r->nama,
+                'tanggal_lahir' => $r->tanggal_lahir,
+                'warna_tanda' => $r->warna_tanda,
+                'jenis_kelamin' => $r->jenis_kelamin,
+                'idpemilik' => $r->idpemilik,
+                'idras_hewan' => $r->idras_hewan,
+            ]);
 
-        return redirect()->route('admin.pet.index')->with('success', '🐶 Data Pet berhasil ditambahkan!');
+            return $this->redirectMsg('admin.pet.index', '🐶 Data Pet berhasil ditambahkan!');
+        } catch (\Throwable $e) {
+            Log::error('Insert pet error: ' . $e->getMessage());
+            return back()->withInput()->with('danger', 'Gagal menambahkan data pet.');
+        }
     }
 
-    /**
-     * Form edit data Pet
-     */
+    /** 🔹 Form edit */
     public function edit($id)
     {
         $pet = DB::table('pet')->where('idpet', $id)->first();
-
         if (!$pet) {
-            return redirect()->route('admin.pet.index')->with('danger', '❌ Data Pet tidak ditemukan.');
+            return $this->redirectMsg('admin.pet.index', 'Data Pet tidak ditemukan.', 'danger');
         }
 
         $pemilikList = DB::table('pemilik')->orderBy('nama')->get();
@@ -92,38 +100,44 @@ class PetController extends Controller
         return view('dashboard.admin.pet.edit', compact('pet', 'pemilikList', 'rasList'));
     }
 
-    /**
-     * Update data Pet
-     */
-    public function update(Request $request, $id)
+    /** 🔹 Update data */
+    public function update(Request $r, $id)
     {
-        $request->validate([
+        $r->validate([
             'nama' => 'required|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'warna_tanda' => 'nullable|string|max:255',
             'jenis_kelamin' => 'required|in:M,F',
-            'idpemilik' => 'required|integer|exists:pemilik,idpemilik',
-            'idras_hewan' => 'required|integer|exists:ras_hewan,idras_hewan',
+            'idpemilik' => 'required|exists:pemilik,idpemilik',
+            'idras_hewan' => 'required|exists:ras_hewan,idras_hewan',
         ]);
 
-        DB::table('pet')->where('idpet', $id)->update([
-            'nama' => $request->nama,
-            'tanggal_lahir' => $request->tanggal_lahir,
-            'warna_tanda' => $request->warna_tanda,
-            'jenis_kelamin' => $request->jenis_kelamin,
-            'idpemilik' => $request->idpemilik,
-            'idras_hewan' => $request->idras_hewan,
-        ]);
+        try {
+            DB::table('pet')->where('idpet', $id)->update([
+                'nama' => $r->nama,
+                'tanggal_lahir' => $r->tanggal_lahir,
+                'warna_tanda' => $r->warna_tanda,
+                'jenis_kelamin' => $r->jenis_kelamin,
+                'idpemilik' => $r->idpemilik,
+                'idras_hewan' => $r->idras_hewan,
+            ]);
 
-        return redirect()->route('admin.pet.index')->with('success', '✅ Data Pet berhasil diperbarui!');
+            return $this->redirectMsg('admin.pet.index', '✅ Data Pet berhasil diperbarui!');
+        } catch (\Throwable $e) {
+            Log::error('Update pet error: ' . $e->getMessage());
+            return back()->withInput()->with('danger', 'Gagal memperbarui data pet.');
+        }
     }
 
-    /**
-     * Hapus data Pet
-     */
+    /** 🔹 Hapus data */
     public function destroy($id)
     {
-        DB::table('pet')->where('idpet', $id)->delete();
-        return redirect()->route('admin.pet.index')->with('success', '🗑️ Data Pet berhasil dihapus.');
+        try {
+            DB::table('pet')->where('idpet', $id)->delete();
+            return back()->with('success', '🗑️ Data Pet berhasil dihapus.');
+        } catch (\Throwable $e) {
+            Log::error('Delete pet error: ' . $e->getMessage());
+            return back()->with('danger', 'Gagal menghapus data pet.');
+        }
     }
 }
