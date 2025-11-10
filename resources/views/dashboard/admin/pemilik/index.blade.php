@@ -1,16 +1,9 @@
-@extends('layouts.admin')
+@extends('layouts.admin.main')
 @section('title', 'Data Pemilik - RSHP UNAIR')
 
 @section('content')
-<section class="min-h-[90vh] bg-[#f5f7ff]">
-  <div class="bg-[#002080] text-white py-3 shadow-md">
-    <div class="max-w-7xl mx-auto flex justify-center items-center gap-10 font-semibold text-[15px] tracking-wide">
-      <a href="{{ route('dashboard.admin') }}" class="hover:text-[#ffd700]">🏠 Home</a>
-      <a href="{{ route('dashboard.admin.data') }}" class="hover:text-[#ffd700]">📋 Data Master</a>
-      <a href="{{ route('logout') }}" class="hover:text-red-300">🚪 Logout</a>
-    </div>
-  </div>
 
+    {{-- Content --}}
   <div class="max-w-6xl mx-auto py-12 px-6">
     <h1 class="text-2xl font-bold text-[#002080] mb-8 text-center">👤 Data Pemilik</h1>
 

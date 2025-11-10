@@ -1,18 +1,9 @@
-@extends('layouts.admin')
+@extends('layouts.admin.main')
 
 @section('title', 'Manajemen Role User - RSHP UNAIR')
 
 @section('content')
 <section class="min-h-[90vh] bg-[#f5f7ff] pb-16">
-
-  {{-- NAVBAR --}}
-  <nav class="bg-[#002080] shadow-md">
-    <div class="max-w-7xl mx-auto flex justify-center items-center gap-10 py-4 text-white font-medium text-[15px]">
-      <a href="{{ route('dashboard.admin') }}" class="hover:text-[#ffd700] transition">🏠 Home</a>
-      <a href="{{ route('dashboard.admin.data') }}" class="hover:text-[#ffd700] transition">📋 Data Master</a>
-      <a href="{{ route('logout') }}" class="hover:text-red-300 transition">🚪 Logout</a>
-    </div>
-  </nav>
 
   <div class="max-w-6xl mx-auto py-12 px-6">
 

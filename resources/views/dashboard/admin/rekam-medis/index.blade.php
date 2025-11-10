@@ -1,17 +1,9 @@
-@extends('layouts.admin')
+@extends('layouts.admin.main')
 
 @section('title', 'Data Rekam Medis - RSHP UNAIR')
 
 @section('content')
 <section class="min-h-[90vh] bg-[#f5f7ff]">
-  {{-- 🔹 Navigasi Atas --}}
-  <div class="bg-[#002080] text-white py-3 shadow-md">
-    <div class="max-w-7xl mx-auto flex justify-center items-center gap-10 font-semibold text-[15px] tracking-wide">
-      <a href="{{ route('dashboard.admin') }}" class="hover:text-[#ffd700]">🏠 Home</a>
-      <a href="{{ route('dashboard.admin.data') }}" class="hover:text-[#ffd700]">📋 Data Master</a>
-      <a href="{{ route('logout') }}" class="hover:text-red-300">🚪 Logout</a>
-    </div>
-  </div>
 
   {{-- 🔹 Konten Utama --}}
   <div class="max-w-6xl mx-auto py-12 px-6">

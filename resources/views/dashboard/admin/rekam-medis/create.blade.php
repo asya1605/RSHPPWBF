@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.admin.main')
 @section('title', 'Tambah Rekam Medis - RSHP UNAIR')
 
 @section('content')

@@ -7,6 +7,7 @@ use App\Http\Controllers\{
     CekKoneksiController
 };
 use App\Http\Controllers\Admin\{
+    HomeController as AdminHomeController,
     DataUserController,
     RoleUserController,
     JenisHewanController,
@@ -60,13 +61,29 @@ Route::controller(AuthController::class)->group(function () {
 // 🔹 DASHBOARD PER ROLE
 // =====================================================
 Route::prefix('dashboard')->group(function () {
-    Route::middleware(['auth', 'isAdmin'])->get('/admin', fn() => view('dashboard.admin.index'))->name('dashboard.admin');
-    Route::middleware(['auth', 'isDokter'])->get('/dokter', fn() => view('dashboard.dokter.index'))->name('dashboard.dokter');
-    Route::middleware(['auth', 'isPerawat'])->get('/perawat', fn() => view('dashboard.perawat.index'))->name('dashboard.perawat');
-    Route::middleware(['auth', 'isResepsionis'])->get('/resepsionis', fn() => view('dashboard.resepsionis.index'))->name('dashboard.resepsionis');
-    Route::middleware(['auth', 'isPemilik'])->get('/pemilik', fn() => view('dashboard.pemilik.index'))->name('dashboard.pemilik');
 
-    // Halaman data master admin
+    // ✅ GANTI: Admin pakai Controller
+    Route::middleware(['auth', 'isAdmin'])
+        ->get('/admin', [AdminHomeController::class, 'index'])
+        ->name('dashboard.admin');
+
+    Route::middleware(['auth', 'isDokter'])
+        ->get('/dokter', fn() => view('dashboard.dokter.index'))
+        ->name('dashboard.dokter');
+
+    Route::middleware(['auth', 'isPerawat'])
+        ->get('/perawat', fn() => view('dashboard.perawat.index'))
+        ->name('dashboard.perawat');
+
+    Route::middleware(['auth', 'isResepsionis'])
+        ->get('/resepsionis', fn() => view('dashboard.resepsionis.index'))
+        ->name('dashboard.resepsionis');
+
+    Route::middleware(['auth', 'isPemilik'])
+        ->get('/pemilik', fn() => view('dashboard.pemilik.index'))
+        ->name('dashboard.pemilik');
+
+    // Halaman Data Master (masih statis)
     Route::middleware(['auth', 'isAdmin'])
         ->get('/admin/data', fn() => view('dashboard.admin.data_master'))
         ->name('dashboard.admin.data');
@@ -106,56 +123,30 @@ Route::prefix('admin')->middleware(['auth', 'isAdmin'])->name('admin.')->group(f
 });
 
 // =====================================================
-// 🔹 DOKTER AREA (UPDATED CRUD PENUH)
+// 🔹 DOKTER AREA
 // =====================================================
 Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->group(function () {
-    Route::get('/rekam-medis', [DokterRekamMedisController::class, 'index'])->name('rekam-medis.index');
-    Route::get('/rekam-medis/create', [DokterRekamMedisController::class, 'create'])->name('rekam-medis.create');
-    Route::post('/rekam-medis', [DokterRekamMedisController::class, 'store'])->name('rekam-medis.store');
-    Route::get('/rekam-medis/{id}', [DokterRekamMedisController::class, 'show'])->name('rekam-medis.show');
-    Route::get('/rekam-medis/{id}/edit', [DokterRekamMedisController::class, 'edit'])->name('rekam-medis.edit');
-    Route::put('/rekam-medis/{id}', [DokterRekamMedisController::class, 'update'])->name('rekam-medis.update');
+    Route::resource('rekam-medis', DokterRekamMedisController::class)->except(['destroy']);
 });
 
 // =====================================================
 // 🔹 PERAWAT AREA
 // =====================================================
 Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->group(function () {
-    Route::get('/rekam-medis', [PerawatRekamMedisController::class, 'index'])->name('rekam-medis.index');
-    Route::get('/rekam-medis/create', [PerawatRekamMedisController::class, 'create'])->name('rekam-medis.create');
-    Route::post('/rekam-medis', [PerawatRekamMedisController::class, 'store'])->name('rekam-medis.store');
-    Route::get('/rekam-medis/{id}', [PerawatRekamMedisController::class, 'show'])->name('rekam-medis.show');
-    Route::put('/rekam-medis/{id}', [PerawatRekamMedisController::class, 'update'])->name('rekam-medis.update');
-
-    // tindakan tambahan
+    Route::resource('rekam-medis', PerawatRekamMedisController::class)->except(['destroy']);
     Route::post('/rekam-medis/{id}/tindakan', [PerawatRekamMedisController::class, 'tambahTindakan'])->name('rekam-medis.tindakan.store');
     Route::put('/rekam-medis/tindakan/{iddetail}', [PerawatRekamMedisController::class, 'updateTindakan'])->name('rekam-medis.tindakan.update');
     Route::delete('/rekam-medis/tindakan/{iddetail}', [PerawatRekamMedisController::class, 'hapusTindakan'])->name('rekam-medis.tindakan.destroy');
 });
 
 // =====================================================
-// 🔹 PEMILIK AREA (UPDATED CRUD PET, RESERVASI & REKAM MEDIS)
+// 🔹 PEMILIK AREA
 // =====================================================
 Route::prefix('pemilik')->middleware(['auth', 'isPemilik'])->name('pemilik.')->group(function () {
     Route::get('/', [PemilikHomeController::class, 'index'])->name('home');
-
-    // 🐾 Daftar Pet
-    Route::get('/daftar-pet', [PemilikDaftarPetController::class, 'index'])->name('pet.index');
-    Route::get('/daftar-pet/create', [PemilikDaftarPetController::class, 'create'])->name('pet.create');
-    Route::post('/daftar-pet', [PemilikDaftarPetController::class, 'store'])->name('pet.store');
-    Route::get('/daftar-pet/{id}/edit', [PemilikDaftarPetController::class, 'edit'])->name('pet.edit');
-    Route::put('/daftar-pet/{id}', [PemilikDaftarPetController::class, 'update'])->name('pet.update');
-
-    // 📅 Reservasi Dokter
-    Route::get('/reservasi', [PemilikReservasiController::class, 'index'])->name('reservasi.index');
-    Route::get('/reservasi/create', [PemilikReservasiController::class, 'create'])->name('reservasi.create');
-    Route::post('/reservasi', [PemilikReservasiController::class, 'store'])->name('reservasi.store');
-
-    // 📋 Rekam Medis Hewan
-    Route::get('/rekam-medis', [PemilikRekamMedisController::class, 'index'])->name('rekam.index');
-    Route::get('/rekam-medis/{id}', [PemilikRekamMedisController::class, 'show'])->name('rekam.show');
-    Route::get('/rekam-medis/create', [PemilikRekamMedisController::class, 'create'])->name('rekam.create');
-    Route::post('/rekam-medis', [PemilikRekamMedisController::class, 'store'])->name('rekam.store');
+    Route::resource('daftar-pet', PemilikDaftarPetController::class)->except(['show', 'destroy']);
+    Route::resource('reservasi', PemilikReservasiController::class)->only(['index', 'create', 'store']);
+    Route::resource('rekam-medis', PemilikRekamMedisController::class)->only(['index', 'show', 'create', 'store']);
 });
 
 // =====================================================
@@ -163,18 +154,9 @@ Route::prefix('pemilik')->middleware(['auth', 'isPemilik'])->name('pemilik.')->g
 // =====================================================
 Route::prefix('resepsionis')->middleware(['auth', 'isResepsionis'])->name('resepsionis.')->group(function () {
     Route::get('/', [ResepsionisHomeController::class, 'index'])->name('home');
-
-    // Temu Dokter
-    Route::get('/temu-dokter', [ResepsionisTemuDokterController::class, 'index'])->name('temu.index');
-    Route::post('/temu-dokter', [ResepsionisTemuDokterController::class, 'store'])->name('temu.store');
-    Route::put('/temu-dokter/{id}', [ResepsionisTemuDokterController::class, 'update'])->name('temu.update');
-    Route::delete('/temu-dokter/{id}', [ResepsionisTemuDokterController::class, 'destroy'])->name('temu.destroy');
-
-    // Registrasi Pemilik & Pet
-    Route::get('/registrasi-pemilik', [ResepsionisPemilikController::class, 'create'])->name('pemilik.create');
-    Route::post('/registrasi-pemilik', [ResepsionisPemilikController::class, 'store'])->name('pemilik.store');
-    Route::get('/registrasi-pet', [ResepsionisPetController::class, 'create'])->name('pet.create');
-    Route::post('/registrasi-pet', [ResepsionisPetController::class, 'store'])->name('pet.store');
+    Route::resource('temu-dokter', ResepsionisTemuDokterController::class)->except(['show', 'edit']);
+    Route::resource('registrasi-pemilik', ResepsionisPemilikController::class)->only(['create', 'store']);
+    Route::resource('registrasi-pet', ResepsionisPetController::class)->only(['create', 'store']);
 });
 
 // =====================================================
@@ -186,6 +168,6 @@ Route::controller(CekKoneksiController::class)->group(function () {
 });
 
 // =====================================================
-// 🔹 DEFAULT HOME (Fallback Laravel)
+// 🔹 DEFAULT HOME
 // =====================================================
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -1,4 +1,5 @@
-@extends('layouts.admin')
+@extends('layouts.admin.main')
+
 @section('title', 'Tambah Pet - RSHP UNAIR')
 
 @section('content')

@@ -1,24 +1,8 @@
-@extends('layouts.admin')
+@extends('layouts.admin.main')
 @section('title', 'Data Kategori Klinis')
 
 @section('content')
 <section class="min-h-[90vh] bg-[#f5f7ff] pb-16">
-
-  {{-- NAVBAR ADMIN --}}
-  <nav class="bg-[#002080] shadow-md">
-    <div class="max-w-7xl mx-auto flex justify-center gap-8 py-4 text-white font-medium">
-      <a href="{{ route('dashboard.admin') }}" class="flex items-center gap-2 hover:text-[#ffd700] transition">
-        🏠 <span>Home</span>
-      </a>
-      <a href="{{ route('dashboard.admin.data') }}" class="flex items-center gap-2 hover:text-[#ffd700] transition">
-        📋 <span>Data Master</span>
-      </a>
-      <a href="{{ route('logout') }}" class="flex items-center gap-2 text-red-300 hover:text-red-400 transition">
-        🚪 <span>Logout</span>
-      </a>
-    </div>
-  </nav>
-
   {{-- CONTENT --}}
   <div class="max-w-5xl mx-auto py-10 px-6">
     <h1 class="text-2xl font-bold text-[#002080] mb-6 text-center">🩺 Data Kategori Klinis</h1>

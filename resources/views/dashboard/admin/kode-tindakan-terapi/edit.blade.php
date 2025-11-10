@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.admin.main')
 
 @section('title', 'Edit Kode Tindakan Terapi - RSHP UNAIR')
 
