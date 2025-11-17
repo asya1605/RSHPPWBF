@@ -18,10 +18,18 @@ use App\Http\Controllers\Admin\{
     KategoriKlinisController,
     KodeTindakanTerapiController,
     RekamMedisController,
-    RelasiController // ⬅️ Tambahan Modul 13
+    RelasiController
 };
-use App\Http\Controllers\Dokter\RekamMedisController as DokterRekamMedisController;
-use App\Http\Controllers\Perawat\RekamMedisController as PerawatRekamMedisController;
+use App\Http\Controllers\Dokter\{
+    RekamMedisController as DokterRekamMedisController,
+    PasienController as DokterPasienController,
+    ProfilController as DokterProfilController
+};
+use App\Http\Controllers\Perawat\{
+    RekamMedisController as PerawatRekamMedisController,
+    PasienController as PerawatPasienController,
+    ProfilController as PerawatProfilController
+};
 use App\Http\Controllers\Pemilik\{
     HomeController as PemilikHomeController,
     DaftarPetController as PemilikDaftarPetController,
@@ -63,23 +71,27 @@ Route::controller(AuthController::class)->group(function () {
 // =====================================================
 Route::prefix('dashboard')->group(function () {
 
-    // ✅ ADMIN pakai Controller
+    // ✅ ADMIN
     Route::middleware(['auth', 'isAdmin'])
         ->get('/admin', [AdminHomeController::class, 'index'])
         ->name('dashboard.admin');
 
+    // ✅ DOKTER
     Route::middleware(['auth', 'isDokter'])
         ->get('/dokter', fn() => view('dashboard.dokter.index'))
         ->name('dashboard.dokter');
 
+    // ✅ PERAWAT
     Route::middleware(['auth', 'isPerawat'])
         ->get('/perawat', fn() => view('dashboard.perawat.index'))
         ->name('dashboard.perawat');
 
+    // ✅ RESEPSIONIS
     Route::middleware(['auth', 'isResepsionis'])
         ->get('/resepsionis', fn() => view('dashboard.resepsionis.index'))
         ->name('dashboard.resepsionis');
 
+    // ✅ PEMILIK
     Route::middleware(['auth', 'isPemilik'])
         ->get('/pemilik', fn() => view('dashboard.pemilik.index'))
         ->name('dashboard.pemilik');
@@ -131,16 +143,23 @@ Route::prefix('admin')->middleware(['auth', 'isAdmin'])->name('admin.')->group(f
 // =====================================================
 Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->group(function () {
     Route::resource('rekam-medis', DokterRekamMedisController::class)->except(['destroy']);
+    Route::get('/pasien', [DokterPasienController::class, 'index'])->name('pasien.index');
+    Route::get('/profil', [DokterProfilController::class, 'index'])->name('profil.index');
 });
 
 // =====================================================
 // 🔹 PERAWAT AREA
 // =====================================================
 Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->group(function () {
+    // CRUD rekam medis
     Route::resource('rekam-medis', PerawatRekamMedisController::class)->except(['destroy']);
     Route::post('/rekam-medis/{id}/tindakan', [PerawatRekamMedisController::class, 'tambahTindakan'])->name('rekam-medis.tindakan.store');
     Route::put('/rekam-medis/tindakan/{iddetail}', [PerawatRekamMedisController::class, 'updateTindakan'])->name('rekam-medis.tindakan.update');
     Route::delete('/rekam-medis/tindakan/{iddetail}', [PerawatRekamMedisController::class, 'hapusTindakan'])->name('rekam-medis.tindakan.destroy');
+
+    // 👁 View Data Pasien & Profil
+    Route::get('/pasien', [PerawatPasienController::class, 'index'])->name('pasien.index');
+    Route::get('/profil', [PerawatProfilController::class, 'index'])->name('profil.index');
 });
 
 // =====================================================

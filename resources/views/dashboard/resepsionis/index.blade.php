@@ -17,13 +17,13 @@
     </p>
 
     <div class="flex flex-wrap justify-center gap-4 mt-6">
-      <a href="{{ route('resepsionis.temu.index') }}" class="btn-primary flex items-center gap-2">
+      <a href="{{ route('resepsionis.temu-dokter.index') }}" class="btn-primary flex items-center gap-2">
         📅 <span>Temu Dokter</span>
       </a>
-      <a href="{{ route('resepsionis.pemilik.create') }}" class="btn-outline flex items-center gap-2">
+      <a href="{{ route('resepsionis.registrasi-pemilik.create') }}" class="btn-outline flex items-center gap-2">
         🧍‍♀️ <span>Registrasi Pemilik</span>
       </a>
-      <a href="{{ route('resepsionis.pet.create') }}" class="btn-outline flex items-center gap-2">
+      <a href="{{ route('resepsionis.registrasi-pet.create') }}" class="btn-outline flex items-center gap-2">
         🐾 <span>Registrasi Pet</span>
       </a>
     </div>

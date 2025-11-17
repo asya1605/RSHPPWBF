@@ -1,52 +1,21 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>@yield('title', 'Dashboard Dokter - RSHP UNAIR')</title>
+  @include('layouts.dokter.head')
+  <body class="font-sans flex flex-col min-h-screen">
 
-  {{-- Tailwind via CDN --}}
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+    {{-- NAVBAR --}}
+    @include('layouts.dokter.navbar')
 
-<body class="bg-[#f5f7ff] font-sans">
+    <div class="flex flex-1">
+      {{-- SIDEBAR --}}
+      @include('layouts.dokter.sidebar')
 
-  {{-- HEADER (Logo & Judul) --}}
-  <header class="bg-white shadow-md">
-    <div class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-      <div class="flex items-center gap-4">
-        <img src="https://rshp.unair.ac.id/wp-content/uploads/2024/06/UNIVERSITAS-AIRLANGGA-scaled.webp"
-             alt="Logo UNAIR" class="h-10">
-        <h1 class="font-bold text-[#002080] text-lg">RSHP Universitas Airlangga</h1>
-      </div>
+      {{-- MAIN CONTENT --}}
+      @include('layouts.dokter.main')
     </div>
-  </header>
 
-  {{-- NAVBAR --}}
-  <nav class="bg-[#002080] shadow-sm">
-    <div class="max-w-7xl mx-auto flex justify-center gap-10 py-3 text-white font-medium">
-      <a href="{{ route('dashboard.dokter') }}" class="hover:text-[#ffd700] transition flex items-center gap-2">
-        🏠 <span>Home</span>
-      </a>
-      <a href="{{ route('dokter.rekam-medis.index') }}" class="hover:text-[#ffd700] transition flex items-center gap-2">
-        📋 <span>Rekam Medis</span>
-      </a>
-      <a href="{{ route('logout') }}" class="text-red-300 hover:text-red-400 transition flex items-center gap-2">
-        🚪 <span>Logout</span>
-      </a>
-    </div>
-  </nav>
+    {{-- FOOTER --}}
+    @include('layouts.dokter.footer')
 
-  {{-- KONTEN UTAMA --}}
-  <main class="py-10 px-6">
-    @yield('content')
-  </main>
-
-  {{-- FOOTER --}}
-  <footer class="bg-[#002080] text-white text-center py-3 mt-16 text-sm">
-    © {{ date('Y') }} Rumah Sakit Hewan Pendidikan - Universitas Airlangga  
-    <br><span class="text-gray-300">All rights reserved.</span>
-  </footer>
-
-</body>
+  </body>
 </html>

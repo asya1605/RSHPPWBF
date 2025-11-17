@@ -14,7 +14,7 @@
     </form>
 
     {{-- Tambah antrian --}}
-    <form method="POST" action="{{ route('resepsionis.temu.store') }}" class="flex flex-wrap gap-3 items-center mb-6">
+    <form method="POST" action="{{ route('resepsionis.temu-dokter.store') }}" class="flex flex-wrap gap-3 items-center mb-6">
       @csrf
       <select name="idpet" required class="border rounded-lg px-3 py-2">
         <option value="">— Pilih Pet —</option>
@@ -60,12 +60,12 @@
                 @endif
               </td>
               <td class="border p-2 text-center">
-                <form method="POST" action="{{ route('resepsionis.temu.update', $a->idreservasi_dokter) }}" class="inline">
+                <form method="POST" action="{{ route('resepsionis.temu-dokter.update', $a->idreservasi_dokter) }}" class="inline">
                   @csrf @method('PUT')
                   <input type="hidden" name="status" value="1">
                   <button class="text-green-700 hover:underline">Selesai</button>
                 </form>
-                <form method="POST" action="{{ route('resepsionis.temu.update', $a->idreservasi_dokter) }}" class="inline" onsubmit="return confirm('Batalkan antrian ini?')">
+                <form method="POST" action="{{ route('resepsionis.temu-dokter.update', $a->idreservasi_dokter) }}" class="inline" onsubmit="return confirm('Batalkan antrian ini?')">
                   @csrf @method('PUT')
                   <input type="hidden" name="status" value="2">
                   <button class="text-red-700 hover:underline ml-2">Batal</button>

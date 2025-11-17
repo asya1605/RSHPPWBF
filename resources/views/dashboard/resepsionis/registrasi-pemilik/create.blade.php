@@ -12,7 +12,7 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('resepsionis.pemilik.store') }}" class="space-y-4">
+    <form method="POST" action="{{ route('resepsionis.registrasi-pemilik.store') }}" class="space-y-4">
       @csrf
       <div>
         <label class="font-semibold">Nama Lengkap</label>

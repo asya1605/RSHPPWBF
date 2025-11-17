@@ -50,7 +50,7 @@
             <td class="p-2 border">{{ $rm->nama_pet }}</td>
             <td class="p-2 border">{{ $rm->diagnosa ?? '-' }}</td>
             <td class="p-2 border text-center">
-              <a href="{{ route('pemilik.rekam.show', $rm->idrekam_medis) }}"
+              <a href="{{ route('pemilik.rekam-medis.show', $rm->idrekam_medis) }}"
                  class="text-blue-700 font-semibold hover:underline">Detail</a>
             </td>
           </tr>

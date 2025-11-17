@@ -22,7 +22,7 @@
          class="inline-flex items-center gap-2 bg-[#002080] hover:bg-[#00185e] text-white px-6 py-3 rounded-lg font-medium transition">
          📅 Lihat Reservasi
       </a>
-      <a href="{{ route('pemilik.pet.index') }}"
+      <a href="{{ route('pemilik.daftar-pet.index') }}"
          class="inline-flex items-center gap-2 bg-[#f0f4ff] hover:bg-[#e0e7ff] text-[#002080] px-6 py-3 rounded-lg border border-[#002080]/20 font-medium transition">
          🐾 Lihat Data Pet
       </a>

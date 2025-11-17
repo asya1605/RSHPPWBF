@@ -47,7 +47,7 @@
   @endif
 
   <div class="mt-6">
-    <a href="{{ route('pemilik.rekam.index') }}" class="text-blue-700 hover:underline">← Kembali</a>
+    <a href="{{ route('pemilik.rekam-medis.index') }}" class="text-blue-700 hover:underline">← Kembali</a>
   </div>
 </div>
 @endsection
