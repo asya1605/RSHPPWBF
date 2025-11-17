@@ -21,16 +21,19 @@
     </li>
 
     {{-- DATA MASTER MENU --}}
-    <li><a href="{{ route('admin.data-user.index') }}" class="sidebar-link">👤 Data User</a></li>
-    <li><a href="{{ route('admin.role-user.index') }}" class="sidebar-link">🧩 Role User</a></li>
-    <li><a href="{{ route('admin.jenis-hewan.index') }}" class="sidebar-link">🐶 Jenis Hewan</a></li>
-    <li><a href="{{ route('admin.ras-hewan.index') }}" class="sidebar-link">🐾 Ras Hewan</a></li>
-    <li><a href="{{ route('admin.pemilik.index') }}" class="sidebar-link">🏠 Data Pemilik</a></li>
-    <li><a href="{{ route('admin.pet.index') }}" class="sidebar-link">🐕 Data Pet</a></li>
-    <li><a href="{{ route('admin.kategori.index') }}" class="sidebar-link">📂 Data Kategori</a></li>
-    <li><a href="{{ route('admin.kategori-klinis.index') }}" class="sidebar-link">🧫 Kategori Klinis</a></li>
-    <li><a href="{{ route('admin.kode-tindakan-terapi.index') }}" class="sidebar-link">💊 Kode Tindakan Terapi</a></li>
-    <li><a href="{{ route('admin.rekam-medis.index') }}" class="sidebar-link">🩺 Rekam Medis</a></li>
+  <li><a href="{{ route('admin.data-user.index') }}" class="sidebar-link">👤 Data User</a></li>
+  <li><a href="{{ route('admin.role-user.index') }}" class="sidebar-link">🧩 Role User</a></li>
+  <li><a href="{{ route('admin.jenis-hewan.index') }}" class="sidebar-link">🐶 Jenis Hewan</a></li>
+  <li><a href="{{ route('admin.ras-hewan.index') }}" class="sidebar-link">🐾 Ras Hewan</a></li>
+  <li><a href="{{ route('admin.pemilik.index') }}" class="sidebar-link">🏠 Data Pemilik</a></li>
+  <li><a href="{{ route('admin.pet.index') }}" class="sidebar-link">🐕 Data Pet</a></li>
+  <li><a href="{{ route('admin.kategori.index') }}" class="sidebar-link">📂 Data Kategori</a></li>
+  <li><a href="{{ route('admin.kategori-klinis.index') }}" class="sidebar-link">🧫 Kategori Klinis</a></li>
+  <li><a href="{{ route('admin.kode-tindakan-terapi.index') }}" class="sidebar-link">💊 Kode Tindakan Terapi</a></li>
+  <li><a href="{{ route('admin.rekam-medis.index') }}" class="sidebar-link">🩺 Rekam Medis</a></li>
+
+{{-- ✨ LAPORAN RELASI (modul 13) --}}
+<li><a href="{{ route('admin.laporan.relasi') }}" class="sidebar-link">📊 Laporan Relasi</a></li>
 
     {{-- LOGOUT --}}
     <li class="mt-6 border-t border-blue-700 pt-3">

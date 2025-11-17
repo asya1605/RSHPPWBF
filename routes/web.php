@@ -17,7 +17,8 @@ use App\Http\Controllers\Admin\{
     KategoriController,
     KategoriKlinisController,
     KodeTindakanTerapiController,
-    RekamMedisController
+    RekamMedisController,
+    RelasiController // ⬅️ Tambahan Modul 13
 };
 use App\Http\Controllers\Dokter\RekamMedisController as DokterRekamMedisController;
 use App\Http\Controllers\Perawat\RekamMedisController as PerawatRekamMedisController;
@@ -62,7 +63,7 @@ Route::controller(AuthController::class)->group(function () {
 // =====================================================
 Route::prefix('dashboard')->group(function () {
 
-    // ✅ GANTI: Admin pakai Controller
+    // ✅ ADMIN pakai Controller
     Route::middleware(['auth', 'isAdmin'])
         ->get('/admin', [AdminHomeController::class, 'index'])
         ->name('dashboard.admin');
@@ -83,7 +84,7 @@ Route::prefix('dashboard')->group(function () {
         ->get('/pemilik', fn() => view('dashboard.pemilik.index'))
         ->name('dashboard.pemilik');
 
-    // Halaman Data Master (masih statis)
+    // Halaman Data Master
     Route::middleware(['auth', 'isAdmin'])
         ->get('/admin/data', fn() => view('dashboard.admin.data_master'))
         ->name('dashboard.admin.data');
@@ -120,6 +121,9 @@ Route::prefix('admin')->middleware(['auth', 'isAdmin'])->name('admin.')->group(f
         'kode-tindakan-terapi' => KodeTindakanTerapiController::class,
         'rekam-medis' => RekamMedisController::class,
     ]);
+
+    /** 📊 Laporan Relasi (Modul 13) */
+    Route::get('/laporan-relasi', [RelasiController::class, 'index'])->name('laporan.relasi');
 });
 
 // =====================================================
