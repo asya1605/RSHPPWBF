@@ -1,10 +1,13 @@
-@extends('layouts.admin')
+@extends('layouts.admin.main')
 
 @section('title', 'Laporan Relasi - RSHP')
 
 @section('content')
 <section class="p-8 bg-[#f8fbff] min-h-screen">
-  <h1 class="text-2xl font-bold text-[#002080] mb-4">📊 Laporan Relasi (Raw Query & Query Builder)</h1>
+  {{-- Header halaman --}}
+  <h1 class="text-2xl font-bold text-[#002080] mb-4">
+    📊 Laporan Relasi (Raw Query & Query Builder)
+  </h1>
 
   {{-- RAW QUERY --}}
   <div class="bg-white shadow rounded-xl p-6 mb-8">

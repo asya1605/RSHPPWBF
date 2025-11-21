@@ -30,6 +30,11 @@
          🩺 <span>Rekam Medis</span>
       </a>
 
+      <a href="{{ route('pemilik.profil.index') }}"
+         class="px-6 py-3 flex items-center gap-3 hover:bg-[#1a2a70] rounded-r-full transition {{ request()->is('pemilik/profil*') ? 'bg-[#1a2a70]' : '' }}">
+         👤 <span>Profil Pemilik</span>
+      </a>
+
       <a href="{{ route('logout') }}"
          class="px-6 py-3 flex items-center gap-3 text-red-300 hover:bg-red-600/30 rounded-r-full transition">
          🚪 <span>Logout</span>

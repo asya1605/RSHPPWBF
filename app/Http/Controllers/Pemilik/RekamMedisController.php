@@ -12,36 +12,42 @@ class RekamMedisController extends Controller
     // ==========================
     // INDEX — Daftar Rekam Medis Pemilik
     // ==========================
-    public function index(Request $request)
-    {
-        $pemilik = DB::table('pemilik')
-            ->where('email', Auth::user()->email)
-            ->first();
+public function index(Request $request)
+{
+    $pemilik = DB::table('pemilik')
+        ->where('email', Auth::user()->email)
+        ->first();
 
-        if (!$pemilik) {
-            return view('dashboard.pemilik.rekam-medis.index', ['rekamMedis' => collect()]);
-        }
-
-        // Filter opsional: berdasarkan tanggal atau pet
-        $petId   = $request->query('idpet');
-        $tanggal = $request->query('tanggal');
-
-        $rekamMedis = DB::table('rekam_medis as rm')
-            ->join('pet as p', 'p.idpet', '=', 'rm.idpet')
-            ->where('p.idpemilik', $pemilik->idpemilik)
-            ->when($petId, fn($q) => $q->where('rm.idpet', $petId))
-            ->when($tanggal, fn($q) => $q->whereDate('rm.created_at', $tanggal))
-            ->select('rm.*', 'p.nama as nama_pet')
-            ->orderByDesc('rm.created_at')
-            ->get();
-
-        $pets = DB::table('pet')
-            ->where('idpemilik', $pemilik->idpemilik)
-            ->select('idpet', 'nama')
-            ->get();
-
-        return view('dashboard.pemilik.rekam-medis.index', compact('rekamMedis', 'pets', 'petId', 'tanggal'));
+    // kalau pemilik belum terdaftar, kirim variabel kosong agar view tidak error
+    if (!$pemilik) {
+        return view('dashboard.pemilik.rekam-medis.index', [
+            'rekamMedis' => collect(),
+            'pets' => collect(), // 🟢 fix penting!
+            'petId' => null,
+            'tanggal' => null,
+        ]);
     }
+
+    // Filter opsional
+    $petId = $request->query('idpet');
+    $tanggal = $request->query('tanggal');
+
+    $rekamMedis = DB::table('rekam_medis as rm')
+        ->join('pet as p', 'p.idpet', '=', 'rm.idpet')
+        ->where('p.idpemilik', $pemilik->idpemilik)
+        ->when($petId, fn($q) => $q->where('rm.idpet', $petId))
+        ->when($tanggal, fn($q) => $q->whereDate('rm.created_at', $tanggal))
+        ->select('rm.*', 'p.nama as nama_pet')
+        ->orderByDesc('rm.created_at')
+        ->get();
+
+    $pets = DB::table('pet')
+        ->where('idpemilik', $pemilik->idpemilik)
+        ->select('idpet', 'nama')
+        ->get();
+
+    return view('dashboard.pemilik.rekam-medis.index', compact('rekamMedis', 'pets', 'petId', 'tanggal'));
+}
 
     // ==========================
     // SHOW — Detail Rekam Medis

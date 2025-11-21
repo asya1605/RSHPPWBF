@@ -166,11 +166,23 @@ Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->g
 // 🔹 PEMILIK AREA
 // =====================================================
 Route::prefix('pemilik')->middleware(['auth', 'isPemilik'])->name('pemilik.')->group(function () {
+    // 🏠 Dashboard
     Route::get('/', [PemilikHomeController::class, 'index'])->name('home');
+
+    // 🐾 Data Hewan
     Route::resource('daftar-pet', PemilikDaftarPetController::class)->except(['show', 'destroy']);
+
+    // 📅 Reservasi
     Route::resource('reservasi', PemilikReservasiController::class)->only(['index', 'create', 'store']);
+
+    // 📋 Rekam Medis
     Route::resource('rekam-medis', PemilikRekamMedisController::class)->only(['index', 'show', 'create', 'store']);
+
+    // 👤 Profil Pemilik
+    Route::get('/profil', [\App\Http\Controllers\Pemilik\ProfilController::class, 'index'])
+        ->name('profil.index');
 });
+
 
 // =====================================================
 // 🔹 RESEPSIONIS AREA

@@ -41,27 +41,33 @@ class ReservasiController extends Controller
     // ==========================
     // CREATE (Form Tambah Reservasi)
     // ==========================
-    public function create()
-    {
-        $pemilik = DB::table('pemilik')
-            ->where('email', Auth::user()->email)
-            ->first();
+public function create()
+{
+    $pemilik = DB::table('pemilik')
+        ->where('email', Auth::user()->email)
+        ->first();
 
-        $pets = DB::table('pet')
-            ->where('idpemilik', $pemilik->idpemilik)
-            ->select('idpet', 'nama')
-            ->get();
-
-        $dokter = DB::table('user')
-            ->join('role_user as ru', 'ru.iduser', '=', 'user.iduser')
-            ->join('role as r', 'r.idrole', '=', 'ru.idrole')
-            ->where('r.nama_role', 'dokter')
-            ->select('user.iduser', 'user.nama')
-            ->orderBy('user.nama')
-            ->get();
-
-        return view('dashboard.pemilik.reservasi.create', compact('pets', 'dokter'));
+    // 🧩 Tambahkan pengecekan agar tidak error saat pemilik belum terdaftar
+    if (!$pemilik) {
+        return redirect()->route('pemilik.reservasi.index')
+            ->with('error', 'Akun Anda belum terdaftar sebagai pemilik. Silakan hubungi admin.');
     }
+
+    $pets = DB::table('pet')
+        ->where('idpemilik', $pemilik->idpemilik)
+        ->select('idpet', 'nama')
+        ->get();
+
+    $dokter = DB::table('user')
+        ->join('role_user as ru', 'ru.iduser', '=', 'user.iduser')
+        ->join('role as r', 'r.idrole', '=', 'ru.idrole')
+        ->where('r.nama_role', 'dokter')
+        ->select('user.iduser', 'user.nama')
+        ->orderBy('user.nama')
+        ->get();
+
+    return view('dashboard.pemilik.reservasi.create', compact('pets', 'dokter'));
+}
 
     // ==========================
     // STORE (Simpan Reservasi)

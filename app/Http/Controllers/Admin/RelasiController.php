@@ -34,9 +34,10 @@ class RelasiController extends Controller
         // 🔹 QUERY BUILDER (Pemilik)
         $queryPemilik = DB::table('pemilik')
             ->join('user', 'pemilik.id_user', '=', 'user.iduser')
-            ->select('user.nama AS nama_user', 'user.email', 'pemilik.alamat', 'pemilik.no_hp')
+            ->select('user.nama AS nama_user', 'user.email', 'pemilik.alamat', 'pemilik.no_wa AS no_hp')
             ->orderBy('user.nama')
             ->get();
+
 
         return view('dashboard.admin.laporan-relasi', compact(
             'rawDokter',

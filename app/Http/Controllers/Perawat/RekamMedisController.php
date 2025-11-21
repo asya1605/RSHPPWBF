@@ -142,9 +142,10 @@ class RekamMedisController extends Controller
                 'drm.*',
                 'ktt.kode',
                 'ktt.deskripsi_tindakan_terapi',
-                'k.nama as nama_kategori',
+                'k.nama_kategori as nama_kategori',
                 'kk.nama_kategori_klinis'
             )
+
             ->where('drm.idrekam_medis', $id)
             ->get();
 

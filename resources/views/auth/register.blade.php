@@ -20,10 +20,10 @@
 
       {{-- Nama --}}
       <div>
-        <label for="name" class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap</label>
-        <input id="name" type="text" name="name" value="{{ old('name') }}" required
-               class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#002080]/40 focus:border-[#002080] focus:outline-none @error('name') border-red-500 @enderror">
-        @error('name')
+        <label for="nama" class="block text-sm font-semibold text-gray-700 mb-1">Nama Lengkap</label>
+        <input id="nama" type="text" name="nama" value="{{ old('nama') }}" required
+               class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#002080]/40 focus:border-[#002080] focus:outline-none @error('nama') border-red-500 @enderror">
+        @error('nama')
           <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
         @enderror
       </div>
