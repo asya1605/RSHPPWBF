@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KodeTindakanTerapi extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'kode_tindakan_terapi';
     protected $primaryKey = 'idkode_tindakan_terapi';
     public $timestamps = false;
@@ -17,15 +20,17 @@ class KodeTindakanTerapi extends Model
         'idkategori_klinis'
     ];
 
-    // Relasi ke kategori
+    protected $dates = ['deleted_at'];
+
+    /** Relasi ke kategori umum */
     public function kategori()
     {
-        return $this->belongsTo(Kategori::class, 'idkategori', 'idkategori');
+        return $this->belongsTo(Kategori::class, 'idkategori', 'idkategori')->withTrashed();
     }
 
-    // Relasi ke kategori klinis
+    /** Relasi ke kategori klinis */
     public function kategoriKlinis()
     {
-        return $this->belongsTo(KategoriKlinis::class, 'idkategori_klinis', 'idkategori_klinis');
+        return $this->belongsTo(KategoriKlinis::class, 'idkategori_klinis', 'idkategori_klinis')->withTrashed();
     }
 }

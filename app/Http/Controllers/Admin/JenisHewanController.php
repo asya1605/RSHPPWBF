@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class JenisHewanController extends Controller
 {
-    /**
-     * 🔹 Helper: Validasi input
-     */
+    # Validasi 
     private function validateJenisHewan($request)
     {
         return $request->validate([
@@ -19,84 +17,52 @@ class JenisHewanController extends Controller
         ]);
     }
 
-    /**
-     * 🔹 Helper: Format nama jenis hewan agar huruf kapital di awal
-     */
+    # Format nama kapital 
     private function formatNamaJenisHewan($nama)
     {
         return ucwords(strtolower(trim($nama)));
     }
 
-    /**
-     * 🔹 Helper: Simpan data ke database
-     */
-    private function createJenisHewan($data)
+    # Index 
+    public function index(Request $request)
     {
-        JenisHewan::create($data);
+        $showDeleted = $request->has('show_deleted');
+
+        $list = DB::table('jenis_hewan')
+            ->when(!$request->has('show_deleted'), fn($q) => $q->whereNull('deleted_at'))
+            ->orderBy('idjenis_hewan', 'asc')
+            ->get();
+
+
+        return view('dashboard.admin.jenis-hewan.index', compact('list', 'showDeleted'));
     }
 
-    /**
-     * 🔸 Tampilkan semua data jenis hewan
-     */
-    public function index()
-    {
-        $list = JenisHewan::orderBy('nama_jenis_hewan')->get();
-        return view('dashboard.admin.jenis-hewan.index', compact('list'));
-    }
-
-    /**
-     * 🔸 Form tambah jenis hewan
-     */
+    # Form tambah 
     public function create()
     {
         return view('dashboard.admin.jenis-hewan.create');
     }
 
-    /**
-     * 🔸 Simpan jenis hewan baru ke database
-     */
+    # Simpan baru 
     public function store(Request $request)
     {
-        // Gunakan helper validasi
         $data = $this->validateJenisHewan($request);
-
-        // Format nama
         $data['nama_jenis_hewan'] = $this->formatNamaJenisHewan($data['nama_jenis_hewan']);
 
-        // Simpan ke database
-        $this->createJenisHewan($data);
+        JenisHewan::create($data);
 
         return redirect()->route('admin.jenis-hewan.index')
-                         ->with('success', '✅ Jenis hewan berhasil ditambahkan.');
+            ->with('success', '✅ Jenis hewan berhasil ditambahkan.');
     }
 
-    /**
-     * 🔸 Tampilkan detail 1 jenis hewan
-     */
-    public function show($id)
-    {
-        $jenis = JenisHewan::find($id);
-
-        if (!$jenis) {
-            return redirect()->route('admin.jenis-hewan.index')
-                             ->with('danger', '❌ Jenis hewan tidak ditemukan.');
-        }
-
-        return redirect()->route('admin.jenis-hewan.index');
-    }
-
-    /**
-     * 🔸 Form edit data jenis hewan
-     */
+    # Edit 
     public function edit($id)
     {
         $jenis = JenisHewan::findOrFail($id);
         return view('dashboard.admin.jenis-hewan.edit', compact('jenis'));
     }
 
-    /**
-     * 🔸 Update data jenis hewan
-     */
+    # Update 
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -105,29 +71,32 @@ class JenisHewanController extends Controller
 
         $namaBaru = $this->formatNamaJenisHewan($request->nama_jenis_hewan);
 
-        JenisHewan::where('idjenis_hewan', $id)->update([
-            'nama_jenis_hewan' => $namaBaru
-        ]);
+        JenisHewan::where('idjenis_hewan', $id)->update(['nama_jenis_hewan' => $namaBaru]);
 
         return redirect()->route('admin.jenis-hewan.index')
-                         ->with('success', '✏️ Jenis hewan berhasil diperbarui.');
+            ->with('success', '✏️ Jenis hewan berhasil diperbarui.');
     }
 
-    /**
-     * 🔸 Hapus data jenis hewan
-     */
+    # Soft delete 
     public function destroy($id)
     {
         $used = DB::table('ras_hewan')->where('idjenis_hewan', $id)->exists();
-
         if ($used) {
             return redirect()->route('admin.jenis-hewan.index')
-                             ->with('danger', '⚠️ Tidak dapat dihapus: masih digunakan pada tabel ras.');
+                ->with('danger', '⚠️ Tidak dapat dihapus: masih digunakan pada tabel ras.');
         }
 
-        JenisHewan::where('idjenis_hewan', $id)->delete();
+        JenisHewan::findOrFail($id)->delete();
 
         return redirect()->route('admin.jenis-hewan.index')
-                         ->with('success', '🗑️ Jenis hewan berhasil dihapus.');
+            ->with('success', '🗑️ Jenis hewan berhasil dihapus (soft delete).');
+    }
+
+    # Restore data 
+    public function restore($id)
+    {
+        JenisHewan::withTrashed()->where('idjenis_hewan', $id)->restore();
+        return redirect()->route('admin.jenis-hewan.index')
+            ->with('success', '♻️ Jenis hewan berhasil dipulihkan.');
     }
 }

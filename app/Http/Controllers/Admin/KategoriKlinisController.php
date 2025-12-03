@@ -3,97 +3,86 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\KategoriKlinis;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class KategoriKlinisController extends Controller
 {
-    /** 🟢 Menampilkan daftar semua kategori klinis */
-    public function index()
+    # Index (aktif & terhapus) 
+    public function index(Request $request)
     {
-        $kategoriList = DB::table('kategori_klinis')
-            ->select('idkategori_klinis', 'nama_kategori_klinis')
+        $showDeleted = $request->has('show_deleted');
+
+        $kategoriList = KategoriKlinis::query()
+            ->when($showDeleted, fn($q) => $q->onlyTrashed())
             ->orderBy('nama_kategori_klinis')
             ->get();
 
-        return view('dashboard.admin.kategori-klinis.index', compact('kategoriList'));
+        return view('dashboard.admin.kategori-klinis.index', compact('kategoriList', 'showDeleted'));
     }
 
-    /** 🟡 Form tambah kategori klinis baru */
+    # Create 
     public function create()
     {
         return view('dashboard.admin.kategori-klinis.create');
     }
 
-    /** 🟢 Simpan kategori klinis baru */
+    # Store 
     public function store(Request $request)
     {
         $request->validate([
             'nama_kategori_klinis' => 'required|string|max:100|unique:kategori_klinis,nama_kategori_klinis',
         ]);
 
-        DB::table('kategori_klinis')->insert([
-            'nama_kategori_klinis' => $request->nama_kategori_klinis,
-        ]);
+        KategoriKlinis::create(['nama_kategori_klinis' => $request->nama_kategori_klinis]);
 
-        return redirect()
-            ->route('admin.kategori-klinis.index')
+        return redirect()->route('admin.kategori-klinis.index')
             ->with('success', '✅ Kategori Klinis berhasil ditambahkan!');
     }
 
-    /** 🟣 Detail kategori klinis */
-    public function show($id)
-    {
-        $kategori = DB::table('kategori_klinis')->where('idkategori_klinis', $id)->first();
-
-        if (!$kategori) {
-            return redirect()
-                ->route('admin.kategori-klinis.index')
-                ->with('danger', '❌ Data kategori klinis tidak ditemukan.');
-        }
-
-        return view('dashboard.admin.kategori-klinis.show', compact('kategori'));
-    }
-
-    /** ✏️ Form edit kategori klinis */
+    # Edit 
     public function edit($id)
     {
-        $kategori = DB::table('kategori_klinis')->where('idkategori_klinis', $id)->first();
+        $kategori = KategoriKlinis::find($id);
 
         if (!$kategori) {
-            return redirect()
-                ->route('admin.kategori-klinis.index')
+            return redirect()->route('admin.kategori-klinis.index')
                 ->with('danger', '❌ Data kategori klinis tidak ditemukan.');
         }
 
         return view('dashboard.admin.kategori-klinis.edit', compact('kategori'));
     }
 
-    /** 🔄 Update kategori klinis */
+    # Update 
     public function update(Request $request, $id)
     {
         $request->validate([
             'nama_kategori_klinis' => 'required|string|max:100|unique:kategori_klinis,nama_kategori_klinis,' . $id . ',idkategori_klinis',
         ]);
 
-        DB::table('kategori_klinis')
-            ->where('idkategori_klinis', $id)
-            ->update([
-                'nama_kategori_klinis' => $request->nama_kategori_klinis,
-            ]);
+        KategoriKlinis::where('idkategori_klinis', $id)->update([
+            'nama_kategori_klinis' => $request->nama_kategori_klinis,
+        ]);
 
-        return redirect()
-            ->route('admin.kategori-klinis.index')
-            ->with('success', '✅ Kategori Klinis berhasil diperbarui!');
+        return redirect()->route('admin.kategori-klinis.index')
+            ->with('success', '✏️ Kategori Klinis berhasil diperbarui!');
     }
 
-    /** 🗑️ Hapus kategori klinis */
+    # Soft Delete 
     public function destroy($id)
     {
-        DB::table('kategori_klinis')->where('idkategori_klinis', $id)->delete();
+        KategoriKlinis::findOrFail($id)->delete();
 
-        return redirect()
-            ->route('admin.kategori-klinis.index')
-            ->with('success', '🗑️ Kategori Klinis berhasil dihapus!');
+        return redirect()->route('admin.kategori-klinis.index')
+            ->with('success', '🗑️ Kategori Klinis berhasil dihapus (soft delete).');
+    }
+
+    # Restore 
+    public function restore($id)
+    {
+        KategoriKlinis::withTrashed()->where('idkategori_klinis', $id)->restore();
+
+        return redirect()->route('admin.kategori-klinis.index')
+            ->with('success', '♻️ Kategori Klinis berhasil dipulihkan.');
     }
 }

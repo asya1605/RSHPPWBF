@@ -12,88 +12,97 @@ use Illuminate\Database\QueryException;
 
 class KodeTindakanTerapiController extends Controller
 {
-    /**
-     * Helper untuk redirect dengan pesan flash.
-     */
     private function redirectWithMessage($route, $message, $type = 'success')
     {
         return redirect()->route($route)->with($type, $message);
     }
 
-    /**
-     * Tampilkan daftar semua kode tindakan terapi.
-     */
-    public function index()
+    # Index 
+    public function index(Request $request)
     {
         try {
-            $data = KodeTindakanTerapi::with(['kategori', 'kategoriKlinis'])->get();
-            return view('dashboard.admin.kode-tindakan-terapi.index', compact('data'));
+            $showDeleted = $request->has('show_deleted');
+
+            $query = KodeTindakanTerapi::with([
+                'kategori' => fn($q) => $q->withTrashed(),
+                'kategoriKlinis' => fn($q) => $q->withTrashed(),
+            ]);
+
+            // kalau mau lihat data terhapus
+            if ($showDeleted) {
+                $query->onlyTrashed();
+            }
+
+            // ⬇TAMPILKAN SEMUA (tanpa pagination)
+            $data = $query->orderBy('kode')->get();
+
+            return view('dashboard.admin.kode-tindakan-terapi.index', [
+                'data'        => $data,
+                'showDeleted' => $showDeleted,
+            ]);
         } catch (QueryException $e) {
             Log::error("Error fetching kode tindakan terapi: " . $e->getMessage());
-            return back()->with('error', 'Gagal memuat data kode tindakan terapi.');
+            return back()->with('error', '⚠️ Gagal memuat data kode tindakan terapi.');
         }
     }
 
-    /**
-     * Tampilkan form tambah kode tindakan terapi.
-     */
+    # Create
     public function create()
     {
         try {
-            $kategori = Kategori::all();
-            $kategori_klinis = KategoriKlinis::all();
+            $kategori = Kategori::orderBy('nama_kategori')->get();
+            $kategori_klinis = KategoriKlinis::orderBy('nama_kategori_klinis')->get();
             return view('dashboard.admin.kode-tindakan-terapi.create', compact('kategori', 'kategori_klinis'));
         } catch (\Exception $e) {
             Log::error("Error loading create form: " . $e->getMessage());
-            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', 'Gagal membuka halaman tambah data.', 'error');
+            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', '⚠️ Gagal membuka halaman tambah data.', 'error');
         }
     }
 
-    /**
-     * Simpan data baru kode tindakan terapi.
-     */
-    public function store(Request $request)
+   # Store
+        public function store(Request $request)
     {
         $request->validate([
             'kode' => 'required|string|max:50|unique:kode_tindakan_terapi,kode',
             'deskripsi_tindakan_terapi' => 'required|string|max:255',
-            'idkategori' => 'required|integer|exists:kategori,idkategori',
-            'idkategori_klinis' => 'required|integer|exists:kategori_klinis,idkategori_klinis',
-        ], [
-            'kode.unique' => 'Kode ini sudah digunakan, silakan gunakan kode lain.',
-            'idkategori.exists' => 'Kategori tidak ditemukan.',
-            'idkategori_klinis.exists' => 'Kategori klinis tidak ditemukan.',
+            'idkategori' => 'required|exists:kategori,idkategori',
+            'idkategori_klinis' => 'required|exists:kategori_klinis,idkategori_klinis',
         ]);
 
         try {
-            KodeTindakanTerapi::create($request->all());
-            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', 'Data berhasil ditambahkan!');
-        } catch (QueryException $e) {
-            Log::error("Error creating kode tindakan terapi: " . $e->getMessage());
-            return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan data.');
+            KodeTindakanTerapi::create([
+                'kode' => $request->kode,
+                'deskripsi_tindakan_terapi' => $request->deskripsi_tindakan_terapi,
+                'idkategori' => $request->idkategori,
+                'idkategori_klinis' => $request->idkategori_klinis,
+            ]);
+
+            return redirect()
+                ->route('admin.kode-tindakan-terapi.index')
+                ->with('success', '✅ Kode tindakan terapi berhasil ditambahkan.');
+        } catch (\Throwable $e) {
+            Log::error('Gagal menyimpan kode tindakan terapi: '.$e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', '❌ Terjadi kesalahan saat menyimpan data.');
         }
     }
-
-    /**
-     * Tampilkan form edit kode tindakan terapi.
-     */
+    # Edit
     public function edit($id)
     {
         try {
             $item = KodeTindakanTerapi::findOrFail($id);
-            $kategori = Kategori::all();
-            $kategori_klinis = KategoriKlinis::all();
+            $kategori = Kategori::withTrashed()->orderBy('nama_kategori')->get();
+            $kategori_klinis = KategoriKlinis::withTrashed()->orderBy('nama_kategori_klinis')->get();
 
             return view('dashboard.admin.kode-tindakan-terapi.edit', compact('item', 'kategori', 'kategori_klinis'));
         } catch (\Exception $e) {
             Log::error("Error editing kode tindakan terapi ID {$id}: " . $e->getMessage());
-            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', 'Data tidak ditemukan.', 'error');
+            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', '❌ Data tidak ditemukan.', 'error');
         }
     }
 
-    /**
-     * Update data kode tindakan terapi.
-     */
+    # Update
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -106,25 +115,34 @@ class KodeTindakanTerapiController extends Controller
         try {
             $item = KodeTindakanTerapi::findOrFail($id);
             $item->update($request->all());
-            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', 'Data berhasil diperbarui.');
+            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', '✏️ Data berhasil diperbarui.');
         } catch (QueryException $e) {
             Log::error("Error updating kode tindakan terapi ID {$id}: " . $e->getMessage());
-            return back()->withInput()->with('error', 'Gagal memperbarui data. Silakan coba lagi.');
+            return back()->withInput()->with('error', '⚠️ Gagal memperbarui data. Silakan coba lagi.');
         }
     }
 
-    /**
-     * Hapus data kode tindakan terapi.
-     */
+    # Soft Delete
     public function destroy($id)
     {
         try {
-            $item = KodeTindakanTerapi::findOrFail($id);
-            $item->delete();
-            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', 'Data berhasil dihapus.');
+            KodeTindakanTerapi::findOrFail($id)->delete();
+            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', '🗑️ Data berhasil dihapus (soft delete).');
         } catch (\Exception $e) {
             Log::error("Error deleting kode tindakan terapi ID {$id}: " . $e->getMessage());
-            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', 'Gagal menghapus data.', 'error');
+            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', '⚠️ Gagal menghapus data.', 'error');
+        }
+    }
+
+   # Restore
+    public function restore($id)
+    {
+        try {
+            KodeTindakanTerapi::withTrashed()->where('idkode_tindakan_terapi', $id)->restore();
+            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', '♻️ Data berhasil dipulihkan!');
+        } catch (\Exception $e) {
+            Log::error("Error restoring kode tindakan terapi ID {$id}: " . $e->getMessage());
+            return $this->redirectWithMessage('admin.kode-tindakan-terapi.index', '⚠️ Gagal memulihkan data.', 'error');
         }
     }
 }

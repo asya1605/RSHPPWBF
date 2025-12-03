@@ -8,9 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class ProfilController extends Controller
 {
-    /** 
-     * 🔹 Tampilkan profil pemilik yang sedang login
-     */
+ 
+     # Tampilkan profil pemilik yang sedang login
     public function index()
     {
         $user = Auth::user();

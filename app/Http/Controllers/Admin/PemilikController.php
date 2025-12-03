@@ -6,38 +6,52 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\QueryException;
+use Carbon\Carbon;
 
 class PemilikController extends Controller
 {
-    /** Helper flash message */
+    # Helper untuk redirect dengan pesan
     private function redirectWithMessage($route, $message, $type = 'success')
     {
         return redirect()->route($route)->with($type, $message);
     }
 
-    /** Tampilkan semua data pemilik */
-    public function index()
+   # Index (aktif & terhapus)
+    public function index(Request $request)
     {
         try {
-            $pemilikList = DB::table('pemilik')
-                ->select('idpemilik', 'nama', 'email', 'no_wa', 'alamat')
-                ->orderBy('nama')
-                ->get();
-            return view('dashboard.admin.pemilik.index', compact('pemilikList'));
+        $query = DB::table('pemilik')
+            ->select('idpemilik', 'nama', 'email', 'no_wa', 'alamat', 'deleted_at', 'deleted_by')
+            ->orderBy('idpemilik', 'asc'); // urut ID dari kecil ke besar
+
+            // Jika user klik toggle show_deleted, tampilkan data terhapus
+            if ($request->has('show_deleted')) {
+                $query->whereNotNull('deleted_at');
+            } else {
+                $query->whereNull('deleted_at');
+            }
+
+            $pemilikList = $query->get();
+
+            return view('dashboard.admin.pemilik.index', [
+                'pemilikList' => $pemilikList,
+                'showDeleted' => $request->has('show_deleted')
+            ]);
         } catch (QueryException $e) {
             Log::error("Error fetch pemilik: " . $e->getMessage());
             return back()->with('danger', 'Gagal memuat data pemilik.');
         }
     }
 
-    /** Form tambah pemilik */
+   # Create
     public function create()
     {
         return view('dashboard.admin.pemilik.create');
     }
 
-    /** Simpan data baru */
+    # Store
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -46,34 +60,17 @@ class PemilikController extends Controller
             'password' => 'required|min:5',
             'no_wa' => 'required|string|max:20',
             'alamat' => 'required|string|max:255',
-        ], [
-            'email.unique' => 'Email ini sudah digunakan!',
-            'password.min' => 'Password minimal 5 karakter.',
         ]);
 
         try {
             DB::transaction(function () use ($validated) {
-                $idpemilik = DB::table('pemilik')->insertGetId([
+                DB::table('pemilik')->insert([
                     'nama' => $validated['nama'],
                     'email' => $validated['email'],
                     'password' => bcrypt($validated['password']),
                     'no_wa' => $validated['no_wa'],
                     'alamat' => $validated['alamat'],
-                ]);
-
-                $role = DB::table('role')->where('nama_role', 'Pemilik')->first();
-                $idrole = $role ? $role->idrole : DB::table('role')->insertGetId(['nama_role' => 'Pemilik']);
-
-                $iduser = DB::table('user')->insertGetId([
-                    'nama' => $validated['nama'],
-                    'email' => $validated['email'],
-                    'password' => bcrypt($validated['password']),
-                ]);
-
-                DB::table('role_user')->insert([
-                    'iduser' => $iduser,
-                    'idrole' => $idrole,
-                    'status' => 1,
+                    'created_at' => now(),
                 ]);
             });
 
@@ -84,21 +81,17 @@ class PemilikController extends Controller
         }
     }
 
-    /** Form edit */
+   # Edit
     public function edit($id)
     {
-        try {
-            $pemilik = DB::table('pemilik')->where('idpemilik', $id)->first();
-            if (!$pemilik) {
-                return $this->redirectWithMessage('admin.pemilik.index', 'Data tidak ditemukan.', 'danger');
-            }
-            return view('dashboard.admin.pemilik.edit', compact('pemilik'));
-        } catch (\Throwable $e) {
-            return $this->redirectWithMessage('admin.pemilik.index', 'Terjadi kesalahan memuat data.', 'danger');
+        $pemilik = DB::table('pemilik')->where('idpemilik', $id)->first();
+        if (!$pemilik) {
+            return $this->redirectWithMessage('admin.pemilik.index', 'Data tidak ditemukan.', 'danger');
         }
+        return view('dashboard.admin.pemilik.edit', compact('pemilik'));
     }
 
-    /** Update data */
+    # Update
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -117,7 +110,7 @@ class PemilikController extends Controller
         }
     }
 
-    /** Hapus data */
+    # Soft Delete
     public function destroy($id)
     {
         try {
@@ -126,11 +119,31 @@ class PemilikController extends Controller
                 return back()->with('danger', "Tidak bisa dihapus. Masih dipakai di $cek data pet.");
             }
 
-            DB::table('pemilik')->where('idpemilik', $id)->delete();
-            return back()->with('success', '🗑️ Data pemilik berhasil dihapus.');
+            DB::table('pemilik')->where('idpemilik', $id)->update([
+                'deleted_at' => Carbon::now(),
+                'deleted_by' => Auth::id(),
+            ]);
+
+            return back()->with('success', '🗑️ Data pemilik berhasil dihapus (soft delete).');
         } catch (\Throwable $e) {
-            Log::error("Error delete pemilik: " . $e->getMessage());
+            Log::error("Error soft delete pemilik: " . $e->getMessage());
             return back()->with('danger', 'Gagal menghapus data.');
+        }
+    }
+
+    #
+    public function restore($id)
+    {
+        try {
+            DB::table('pemilik')->where('idpemilik', $id)->update([
+                'deleted_at' => null,
+                'deleted_by' => null,
+            ]);
+
+            return back()->with('success', '♻️ Data pemilik berhasil dipulihkan.');
+        } catch (\Throwable $e) {
+            Log::error("Error restore pemilik: " . $e->getMessage());
+            return back()->with('danger', 'Gagal memulihkan data.');
         }
     }
 }

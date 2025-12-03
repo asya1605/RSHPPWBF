@@ -7,9 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    /**
-     * Dashboard Admin – ambil data statistik dari database
-     */
+     ### Dashboard Admin – ambil data statistik dari database
+     
     public function index()
     {
         $stats = [

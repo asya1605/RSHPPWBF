@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RekamMedisController extends Controller
 {
-    // ==========================
-    // INDEX — Daftar Rekam Medis Pemilik
-    // ==========================
+   # Tampilkan daftar rekam medis pemilik yang sedang login
 public function index(Request $request)
 {
     $pemilik = DB::table('pemilik')
@@ -49,9 +47,7 @@ public function index(Request $request)
     return view('dashboard.pemilik.rekam-medis.index', compact('rekamMedis', 'pets', 'petId', 'tanggal'));
 }
 
-    // ==========================
-    // SHOW — Detail Rekam Medis
-    // ==========================
+   # Tampilkan detail rekam medis tertentu
     public function show($id)
     {
         // Header rekam medis (info umum)
@@ -84,9 +80,7 @@ public function index(Request $request)
         return view('dashboard.pemilik.rekam-medis.show', compact('header', 'detail'));
     }
 
-    // ==========================
-    // CREATE — Form Tambah Keluhan Awal
-    // ==========================
+    #  Tampilkan form buat rekam medis baru
     public function create()
     {
         $pemilik = DB::table('pemilik')
@@ -104,9 +98,7 @@ public function index(Request $request)
         return view('dashboard.pemilik.rekam-medis.create', compact('pets'));
     }
 
-    // ==========================
-    // STORE — Simpan Keluhan Awal
-    // ==========================
+    # Simpan rekam medis baru
     public function store(Request $request)
     {
         $this->validateRekam($request);
@@ -122,9 +114,7 @@ public function index(Request $request)
             ->with('ok', 'Keluhan awal berhasil dikirim. Dokter akan meninjau!');
     }
 
-    // ==========================
-    // VALIDATION
-    // ==========================
+    #  VALIDASI — Rekam Medis Baru
     private function validateRekam(Request $request)
     {
         $request->validate([
@@ -136,9 +126,7 @@ public function index(Request $request)
         ]);
     }
 
-    // ==========================
-    // HELPER — Format Text
-    // ==========================
+    # FORMATTEKST — Membuat format teks konsisten
     private function formatText(string $text)
     {
         return ucfirst(strtolower(trim($text)));

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class RekamMedisController extends Controller
 {
-    // ✅ INDEX: daftar reservasi tanpa RM + RM yang sudah ada (dengan filter tanggal)
+    // INDEX: daftar reservasi tanpa RM + RM yang sudah ada (dengan filter tanggal)
     public function index(Request $request)
     {
         // Ambil tanggal dari query string, default = hari ini
@@ -53,7 +53,7 @@ class RekamMedisController extends Controller
         return view('dashboard.perawat.rekam-medis.index', compact('reservasi', 'rekamMedis', 'selectedDate'));
     }
 
-    // ✅ CREATE (form buat RM baru)
+    // CREATE (form buat RM baru)
     public function create(Request $request)
     {
         $idreservasi = $request->query('idreservasi');
@@ -96,7 +96,7 @@ class RekamMedisController extends Controller
         return view('dashboard.perawat.rekam-medis.create', compact('ctx', 'listDokter'));
     }
 
-    // ✅ STORE (simpan RM baru)
+    // STORE (simpan RM baru)
     public function store(Request $request)
     {
         $request->validate([
@@ -121,7 +121,7 @@ class RekamMedisController extends Controller
             ->with('success', 'Rekam medis berhasil dibuat.');
     }
 
-    // ✅ SHOW (Detail RM + CRUD tindakan)
+    // SHOW (Detail RM + CRUD tindakan)
     public function show($id)
     {
         $rekamMedis = DB::table('rekam_medis as rm')
@@ -157,7 +157,7 @@ class RekamMedisController extends Controller
         return view('dashboard.perawat.rekam-medis.show', compact('rekamMedis', 'detailTindakan', 'listKode'));
     }
 
-    // ✅ UPDATE HEADER RM
+    // UPDATE HEADER RM
     public function update(Request $request, $id)
     {
         DB::table('rekam_medis')
@@ -171,7 +171,7 @@ class RekamMedisController extends Controller
         return back()->with('success', 'Rekam medis berhasil diperbarui.');
     }
 
-    // ✅ TAMBAH TINDAKAN
+    // TAMBAH TINDAKAN
     public function tambahTindakan(Request $request, $id)
     {
         $request->validate([
@@ -187,7 +187,7 @@ class RekamMedisController extends Controller
         return back()->with('success', 'Tindakan berhasil ditambahkan.');
     }
 
-    // ✅ UPDATE TINDAKAN
+    // UPDATE TINDAKAN
     public function updateTindakan(Request $request, $iddetail)
     {
         DB::table('detail_rekam_medis')
@@ -200,7 +200,7 @@ class RekamMedisController extends Controller
         return back()->with('success', 'Tindakan berhasil diperbarui.');
     }
 
-    // ✅ HAPUS TINDAKAN
+    // HAPUS TINDAKAN
     public function hapusTindakan($iddetail)
     {
         DB::table('detail_rekam_medis')

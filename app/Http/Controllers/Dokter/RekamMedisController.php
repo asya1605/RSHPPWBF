@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class RekamMedisController extends Controller
 {
-    // ==========================
-    // INDEX (lihat daftar rekam medis)
-    // ==========================
+    # Daftar rekam medis dengan filter tanggal
     public function index(Request $request)
     {
         $selectedDate = $request->query('date', date('Y-m-d'));
@@ -38,9 +36,7 @@ class RekamMedisController extends Controller
         return view('dashboard.dokter.rekam-medis.index', compact('list', 'selectedDate'));
     }
 
-    // ==========================
-    // CREATE (form input rekam medis baru)
-    // ==========================
+    # Form tambah rekam medis baru
     public function create()
     {
         $pets = DB::table('pet as p')
@@ -52,9 +48,7 @@ class RekamMedisController extends Controller
         return view('dashboard.dokter.rekam-medis.create', compact('pets'));
     }
 
-    // ==========================
-    // STORE (proses simpan ke database)
-    // ==========================
+    # Simpan rekam medis baru
     public function store(Request $request)
     {
         $this->validateRekamMedis($request);
@@ -64,9 +58,8 @@ class RekamMedisController extends Controller
             ->with('ok', 'Rekam medis baru berhasil ditambahkan!');
     }
 
-    // ==========================
-    // SHOW (detail rekam medis)
-    // ==========================
+    
+    # Detail rekam medis
     public function show($id)
     {
         $rekam = DB::table('rekam_medis as rm')
@@ -97,9 +90,7 @@ class RekamMedisController extends Controller
         return view('dashboard.dokter.rekam-medis.show', compact('rekam', 'detailTindakan'));
     }
 
-    // ==========================
-    // EDIT (form ubah data)
-    // ==========================
+    # Form edit rekam medis
     public function edit($id)
     {
         $rekam = DB::table('rekam_medis')->where('idrekam_medis', $id)->first();
@@ -115,9 +106,7 @@ class RekamMedisController extends Controller
         return view('dashboard.dokter.rekam-medis.edit', compact('rekam', 'pets'));
     }
 
-    // ==========================
-    // UPDATE (proses ubah data)
-    // ==========================
+    # Update rekam medis
     public function update(Request $request, $id)
     {
         $this->validateRekamMedis($request);
@@ -136,9 +125,7 @@ class RekamMedisController extends Controller
             ->with('ok', 'Data rekam medis berhasil diperbarui!');
     }
 
-    // ==========================
-    // VALIDATION
-    // ==========================
+    # Validasi input rekam medis
     private function validateRekamMedis($request)
     {
         $request->validate([
@@ -153,9 +140,7 @@ class RekamMedisController extends Controller
         ]);
     }
 
-    // ==========================
-    // HELPER - Insert ke database
-    // ==========================
+    # Simpan rekam medis baru ke database
     private function createRekamMedis($request)
     {
         DB::table('rekam_medis')->insert([
@@ -168,9 +153,7 @@ class RekamMedisController extends Controller
         ]);
     }
 
-    // ==========================
-    // HELPER - Format teks
-    // ==========================
+    # Format teks input
     private function formatText($text)
     {
         if (!$text) return null;

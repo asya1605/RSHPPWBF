@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class PasienController extends Controller
 {
-    /** 
-     * 🔹 Tampilkan daftar pasien (pemilik & hewan)
-     */
+    # Tampilkan daftar pasien
     public function index()
     {
         $pasien = DB::table('pet as p')

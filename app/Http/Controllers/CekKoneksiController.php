@@ -9,7 +9,7 @@ use App\Models\RoleUser;
 
 class CekKoneksiController extends Controller
 {
-    // 🔹 Tes koneksi database dasar
+    // Tes koneksi database dasar
     public function index()
     {
         try {
@@ -21,7 +21,7 @@ class CekKoneksiController extends Controller
         }
     }
 
-    // 🔹 Menampilkan data tabel utama
+    // Menampilkan data tabel utama
     public function data()
     {
         $users = User::with('roles')->get();

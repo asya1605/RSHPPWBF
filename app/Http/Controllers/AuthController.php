@@ -10,13 +10,13 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-    // 🔹 Form login
+    // Form login
     public function showLoginForm()
     {
         return view('auth.login');
     }
 
-    // 🔹 Proses login
+    // Proses login
     public function login(Request $request)
     {
         $request->validate([
@@ -62,7 +62,7 @@ class AuthController extends Controller
         return back()->with('error', 'Email atau password salah!');
     }
 
-    // 🔹 Logout
+    //  Logout
     public function logout(Request $request)
     {
         Auth::logout();
@@ -72,17 +72,17 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // ✅ Redirect ke halaman utama (menu publik)
+        // Redirect ke halaman utama (menu publik)
         return redirect()->route('site.home')->with('success', 'Anda berhasil logout dari sistem.');
     }
 
-    // 🔹 Form register
+    //  Form register
     public function showRegisterForm()
     {
         return view('auth.register');
     }
 
-    // 🔹 Proses register
+    // Proses register
     public function register(Request $request)
     {
         $request->validate([

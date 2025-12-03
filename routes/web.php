@@ -43,9 +43,7 @@ use App\Http\Controllers\Resepsionis\{
     PetController as ResepsionisPetController
 };
 
-// =====================================================
-// 🔹 HALAMAN PUBLIK
-// =====================================================
+# HALAMAN PUBLIK (SITE)
 Route::controller(SiteController::class)->group(function () {
     Route::get('/', 'home')->name('site.home');
     Route::get('/struktur', 'struktur')->name('site.struktur');
@@ -55,9 +53,8 @@ Route::controller(SiteController::class)->group(function () {
     Route::get('/jadwal', 'jadwal')->name('site.jadwal');
 });
 
-// =====================================================
-// 🔹 AUTHENTICATION (LOGIN, REGISTER, LOGOUT)
-// =====================================================
+
+# AUTHENTIKASI USER
 Route::controller(AuthController::class)->group(function () {
     Route::get('/login', 'showLoginForm')->name('login');
     Route::post('/login', 'login')->name('login.post');
@@ -66,9 +63,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::get('/logout', 'logout')->name('logout');
 });
 
-// =====================================================
-// 🔹 DASHBOARD PER ROLE
-// =====================================================
+
+# DASHBOARD AREA
 Route::prefix('dashboard')->group(function () {
 
     // ✅ ADMIN
@@ -102,27 +98,32 @@ Route::prefix('dashboard')->group(function () {
         ->name('dashboard.admin.data');
 });
 
-// =====================================================
-// 🔹 ADMIN AREA
-// =====================================================
+
+# ADMIN AREA
 Route::prefix('admin')->middleware(['auth', 'isAdmin'])->name('admin.')->group(function () {
 
-    /** 👤 Data User */
+    # Data User
     Route::resource('data-user', DataUserController::class);
     Route::post('data-user/{id}/reset', [DataUserController::class, 'reset'])->name('data-user.reset');
 
-    /** ⚙️ Role User */
-    Route::prefix('role-user')->name('role-user.')->group(function () {
-        Route::get('/', [RoleUserController::class, 'index'])->name('index');
-        Route::post('/', [RoleUserController::class, 'store'])->name('store');
-        Route::get('/set-active/{iduser}/{idrole}', [RoleUserController::class, 'setActive'])->name('setActive');
-        Route::post('/set-active-confirm', [RoleUserController::class, 'setActiveConfirm'])->name('setActiveConfirm');
-        Route::get('/deactivate/{iduser}/{idrole}', [RoleUserController::class, 'deactivate'])->name('deactivate');
-        Route::post('/deactivate-confirm', [RoleUserController::class, 'deactivateConfirm'])->name('deactivateConfirm');
-        Route::post('/destroy-confirm', [RoleUserController::class, 'destroyConfirm'])->name('destroyConfirm');
-    });
+    # Manajemen Role User
+Route::prefix('role-user')->name('role-user.')->group(function () {
+    Route::get('/', [RoleUserController::class, 'index'])->name('index');
+    Route::post('/', [RoleUserController::class, 'store'])->name('store');
+    Route::post('/create-role', [RoleUserController::class, 'createRole'])->name('createRole'); // 🆕 tambah role baru
+    Route::get('/set-active/{iduser}/{idrole}', [RoleUserController::class, 'setActive'])->name('setActive');
+    Route::post('/set-active-confirm', [RoleUserController::class, 'setActiveConfirm'])->name('setActiveConfirm');
+    Route::get('/deactivate/{iduser}/{idrole}', [RoleUserController::class, 'deactivate'])->name('deactivate');
+    Route::post('/deactivate-confirm', [RoleUserController::class, 'deactivateConfirm'])->name('deactivateConfirm');
+    Route::post('/destroy-confirm', [RoleUserController::class, 'destroyConfirm'])->name('destroyConfirm');
+    Route::post('/create-role', [RoleUserController::class, 'createRole'])->name('createRole');
+    Route::post('/destroy-role/{id}', [RoleUserController::class, 'destroyRole'])->name('destroyRole');
+    Route::post('/restore-role/{id}', [RoleUserController::class, 'restoreRole'])->name('restoreRole');
 
-    /** 📂 Data Master */
+});
+
+
+    # Data Master Resources
     Route::resources([
         'jenis-hewan' => JenisHewanController::class,
         'ras-hewan' => RasHewanController::class,
@@ -134,22 +135,32 @@ Route::prefix('admin')->middleware(['auth', 'isAdmin'])->name('admin.')->group(f
         'rekam-medis' => RekamMedisController::class,
     ]);
 
-    /** 📊 Laporan Relasi (Modul 13) */
+    # Soft Delete Restore Routes
+    Route::post('/pemilik/{id}/restore', [PemilikController::class, 'restore'])->name('pemilik.restore');
+    Route::post('/pet/{id}/restore', [PetController::class, 'restore'])->name('pet.restore');
+    Route::post('/data-user/{id}/restore', [DataUserController::class, 'restore'])->name('data-user.restore');
+    Route::post('/jenis-hewan/{id}/restore', [JenisHewanController::class, 'restore'])->name('jenis-hewan.restore');
+    Route::post('/ras-hewan/{id}/restore', [RasHewanController::class, 'restore'])->name('ras-hewan.restore');
+    Route::post('/kategori/{id}/restore', [KategoriController::class, 'restore'])->name('kategori.restore');
+    Route::post('/kategori-klinis/{id}/restore', [KategoriKlinisController::class, 'restore'])->name('kategori-klinis.restore');
+    Route::post('/kode-tindakan-terapi/{id}/restore', [KodeTindakanTerapiController::class, 'restore'])->name('kode-tindakan-terapi.restore');
+    Route::post('/rekam-medis/{id}/restore', [RekamMedisController::class, 'restore'])->name('rekam-medis.restore');
+
+   # Laporan Relasi
     Route::get('/laporan-relasi', [RelasiController::class, 'index'])->name('laporan.relasi');
+
+
 });
 
-// =====================================================
-// 🔹 DOKTER AREA
-// =====================================================
+
+# DOKTER AREA
 Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->group(function () {
     Route::resource('rekam-medis', DokterRekamMedisController::class)->except(['destroy']);
     Route::get('/pasien', [DokterPasienController::class, 'index'])->name('pasien.index');
     Route::get('/profil', [DokterProfilController::class, 'index'])->name('profil.index');
 });
 
-// =====================================================
-// 🔹 PERAWAT AREA
-// =====================================================
+# PERAWAT AREA
 Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->group(function () {
     // CRUD rekam medis
     Route::resource('rekam-medis', PerawatRekamMedisController::class)->except(['destroy']);
@@ -157,36 +168,33 @@ Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->g
     Route::put('/rekam-medis/tindakan/{iddetail}', [PerawatRekamMedisController::class, 'updateTindakan'])->name('rekam-medis.tindakan.update');
     Route::delete('/rekam-medis/tindakan/{iddetail}', [PerawatRekamMedisController::class, 'hapusTindakan'])->name('rekam-medis.tindakan.destroy');
 
-    // 👁 View Data Pasien & Profil
+    // View Data Pasien & Profil
     Route::get('/pasien', [PerawatPasienController::class, 'index'])->name('pasien.index');
     Route::get('/profil', [PerawatProfilController::class, 'index'])->name('profil.index');
 });
 
-// =====================================================
-// 🔹 PEMILIK AREA
-// =====================================================
+
+# PEMILIK AREA
 Route::prefix('pemilik')->middleware(['auth', 'isPemilik'])->name('pemilik.')->group(function () {
-    // 🏠 Dashboard
+    // Dashboard
     Route::get('/', [PemilikHomeController::class, 'index'])->name('home');
 
-    // 🐾 Data Hewan
+    // Data Hewan
     Route::resource('daftar-pet', PemilikDaftarPetController::class)->except(['show', 'destroy']);
 
-    // 📅 Reservasi
+    // Reservasi
     Route::resource('reservasi', PemilikReservasiController::class)->only(['index', 'create', 'store']);
 
-    // 📋 Rekam Medis
+    // Rekam Medis
     Route::resource('rekam-medis', PemilikRekamMedisController::class)->only(['index', 'show', 'create', 'store']);
 
-    // 👤 Profil Pemilik
+    // Profil Pemilik
     Route::get('/profil', [\App\Http\Controllers\Pemilik\ProfilController::class, 'index'])
         ->name('profil.index');
 });
 
 
-// =====================================================
-// 🔹 RESEPSIONIS AREA
-// =====================================================
+# RESEPSIONIS AREA
 Route::prefix('resepsionis')->middleware(['auth', 'isResepsionis'])->name('resepsionis.')->group(function () {
     Route::get('/', [ResepsionisHomeController::class, 'index'])->name('home');
     Route::resource('temu-dokter', ResepsionisTemuDokterController::class)->except(['show', 'edit']);
@@ -194,15 +202,11 @@ Route::prefix('resepsionis')->middleware(['auth', 'isResepsionis'])->name('resep
     Route::resource('registrasi-pet', ResepsionisPetController::class)->only(['create', 'store']);
 });
 
-// =====================================================
-// 🔹 CEK KONEKSI DATABASE
-// =====================================================
+# CEK KONEKSI & DATA
 Route::controller(CekKoneksiController::class)->group(function () {
     Route::get('/cek-koneksi', 'index')->name('cek.koneksi');
     Route::get('/cek-data', 'data')->name('cek.data');
 });
 
-// =====================================================
-// 🔹 DEFAULT HOME
-// =====================================================
+# HOME ROUTE
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ReservasiController extends Controller
 {
-    // ==========================
-    // INDEX (Daftar Reservasi)
-    // ==========================
+   # Tampilkan daftar reservasi pemilik yang sedang login
     public function index()
     {
         $pemilik = DB::table('pemilik')
@@ -38,9 +36,7 @@ class ReservasiController extends Controller
         return view('dashboard.pemilik.reservasi.index', compact('reservasi'));
     }
 
-    // ==========================
-    // CREATE (Form Tambah Reservasi)
-    // ==========================
+    # Tampilkan form buat reservasi baru
 public function create()
 {
     $pemilik = DB::table('pemilik')
@@ -69,9 +65,7 @@ public function create()
     return view('dashboard.pemilik.reservasi.create', compact('pets', 'dokter'));
 }
 
-    // ==========================
-    // STORE (Simpan Reservasi)
-    // ==========================
+   # Simpan reservasi baru
     public function store(Request $request)
     {
         $this->validateReservasi($request);
@@ -99,9 +93,7 @@ public function create()
             ->with('ok', 'Reservasi berhasil dibuat! Silakan menunggu konfirmasi dokter.');
     }
 
-    // ==========================
-    // VALIDATION
-    // ==========================
+    #  VALIDASI — Reservasi Baru
     private function validateReservasi($request)
     {
         $request->validate([
@@ -116,9 +108,7 @@ public function create()
         ]);
     }
 
-    // ==========================
-    // HELPER (Format Text)
-    // ==========================
+   # FORMATTEKST — Membuat format teks konsisten
     private function formatText($text)
     {
         return ucfirst(strtolower(trim($text)));

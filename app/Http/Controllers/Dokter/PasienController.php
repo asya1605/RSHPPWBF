@@ -7,9 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class PasienController extends Controller
 {
-    /**
-     * 🩺 Menampilkan daftar pasien (pemilik dan hewan yang dimiliki)
-     */
+    # Daftar pasien dengan data hewan peliharaan
     public function index()
     {
         $pasien = DB::table('pemilik')
@@ -22,7 +20,7 @@ class PasienController extends Controller
                 'pemilik.email',
                 'pemilik.no_wa',
                 'pemilik.alamat',
-                'pet.nama as nama_hewan', // ✅ perbaikan di sini
+                'pet.nama as nama_hewan', 
                 'jenis_hewan.nama_jenis_hewan',
                 'ras_hewan.nama_ras'
             )

@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DaftarPetController extends Controller
 {
-    // ==========================
-    // INDEX (Daftar Pet)
-    // ==========================
+    # iNDEX (Menampilkan daftar hewan peliharaan)
     public function index()
     {
         $pemilik = DB::table('pemilik')
@@ -33,9 +31,7 @@ class DaftarPetController extends Controller
         return view('dashboard.pemilik.daftar-pet.index', compact('pets'));
     }
 
-    // ==========================
-    // CREATE (Form tambah hewan)
-    // ==========================
+    # CREATE (Form tambah hewan peliharaan)
     public function create()
     {
         $ras = DB::table('ras_hewan')
@@ -47,9 +43,7 @@ class DaftarPetController extends Controller
         return view('dashboard.pemilik.daftar-pet.create', compact('ras'));
     }
 
-    // ==========================
-    // STORE (Proses simpan data baru)
-    // ==========================
+   # STORE (Proses simpan hewan peliharaan baru)
     public function store(Request $request)
     {
         $this->validatePet($request);
@@ -59,9 +53,7 @@ class DaftarPetController extends Controller
             ->with('ok', 'Hewan peliharaan baru berhasil ditambahkan!');
     }
 
-    // ==========================
-    // EDIT (Form ubah data)
-    // ==========================
+    # EDIT (Form ubah data hewan peliharaan)
     public function edit($id)
     {
         $pemilik = DB::table('pemilik')
@@ -86,9 +78,7 @@ class DaftarPetController extends Controller
         return view('dashboard.pemilik.daftar-pet.edit', compact('pet', 'ras'));
     }
 
-    // ==========================
-    // UPDATE (Proses simpan perubahan)
-    // ==========================
+    # UPDATE (Proses ubah data hewan peliharaan)
     public function update(Request $request, $id)
     {
         $this->validatePet($request);
@@ -107,9 +97,7 @@ class DaftarPetController extends Controller
             ->with('ok', 'Data hewan berhasil diperbarui!');
     }
 
-    // ==========================
-    // VALIDASI INPUT
-    // ==========================
+    # VALIDATION (Validasi input hewan peliharaan)
     private function validatePet($request)
     {
         $request->validate([
@@ -124,9 +112,7 @@ class DaftarPetController extends Controller
         ]);
     }
 
-    // ==========================
-    // HELPER - Insert ke Database
-    // ==========================
+   # HELPERS - Insert hewan peliharaan baru ke database
     private function insertPet($request)
     {
         $pemilik = DB::table('pemilik')
@@ -143,9 +129,7 @@ class DaftarPetController extends Controller
         ]);
     }
 
-    // ==========================
-    // HELPER - Format Teks
-    // ==========================
+    # HELPERS - Format teks input
     private function formatText($text)
     {
         return ucfirst(strtolower(trim($text)));
