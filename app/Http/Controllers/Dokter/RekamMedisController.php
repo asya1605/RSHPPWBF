@@ -5,16 +5,17 @@ namespace App\Http\Controllers\Dokter;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class RekamMedisController extends Controller
 {
-    # Daftar rekam medis dengan filter tanggal
+    // Daftar rekam medis dengan filter tanggal
     public function index(Request $request)
     {
-        $selectedDate = $request->query('date', date('Y-m-d'));
+        $selectedDate = $request->query('date');
 
         $list = DB::table('rekam_medis as rm')
-            ->join('temu_dokter as td', 'td.idreservasi_dokter', '=', 'rm.idreservasi_dokter')
+            ->leftJoin('temu_dokter as td', 'td.idreservasi_dokter', '=', 'rm.idreservasi_dokter')
             ->join('pet as p', 'p.idpet', '=', 'rm.idpet')
             ->join('pemilik as pem', 'pem.idpemilik', '=', 'p.idpemilik')
             ->select(
@@ -28,16 +29,19 @@ class RekamMedisController extends Controller
                 'pem.nama as nama_pemilik',
                 DB::raw('(SELECT COUNT(*) FROM detail_rekam_medis drm WHERE drm.idrekam_medis = rm.idrekam_medis) as jml_tindakan')
             )
-            ->whereDate('rm.created_at', $selectedDate)
-            ->orderBy('td.no_urut', 'asc')
-            ->orderBy('rm.created_at', 'asc')
+            ->when($selectedDate, function ($q) use ($selectedDate) {
+                $q->whereDate('rm.created_at', $selectedDate);
+            })
+            ->orderByRaw('td.no_urut IS NULL') // NULL taruh bawah
+            ->orderBy('td.no_urut')
+            ->orderBy('rm.created_at')
             ->get();
 
         return view('dashboard.dokter.rekam-medis.index', compact('list', 'selectedDate'));
     }
 
-    # Form tambah rekam medis baru
-    public function create()
+    // Form tambah rekam medis baru
+    public function create(Request $request)
     {
         $pets = DB::table('pet as p')
             ->join('pemilik as pem', 'pem.idpemilik', '=', 'p.idpemilik')
@@ -45,10 +49,11 @@ class RekamMedisController extends Controller
             ->orderBy('pem.nama')
             ->get();
 
+        // tidak perlu idreservasi_dokter di sini, nanti dicari otomatis di backend
         return view('dashboard.dokter.rekam-medis.create', compact('pets'));
     }
 
-    # Simpan rekam medis baru
+    // Simpan rekam medis baru
     public function store(Request $request)
     {
         $this->validateRekamMedis($request);
@@ -58,8 +63,7 @@ class RekamMedisController extends Controller
             ->with('ok', 'Rekam medis baru berhasil ditambahkan!');
     }
 
-    
-    # Detail rekam medis
+    // Detail rekam medis + list tindakan + master tindakan buat form tambah
     public function show($id)
     {
         $rekam = DB::table('rekam_medis as rm')
@@ -73,24 +77,38 @@ class RekamMedisController extends Controller
             abort(404, 'Rekam medis tidak ditemukan.');
         }
 
+        // Detail tindakan yang sudah tercatat
         $detailTindakan = DB::table('detail_rekam_medis as drm')
             ->join('kode_tindakan_terapi as ktt', 'drm.idkode_tindakan_terapi', '=', 'ktt.idkode_tindakan_terapi')
-            ->join('kategori as k', 'ktt.idkategori', '=', 'k.idkategori')
             ->join('kategori_klinis as kk', 'ktt.idkategori_klinis', '=', 'kk.idkategori_klinis')
             ->select(
+                'drm.iddetail_rekam_medis',
+                'drm.detail',
+                'ktt.idkode_tindakan_terapi',
                 'ktt.kode',
                 'ktt.deskripsi_tindakan_terapi',
-                'k.nama as nama_kategori',
-                'kk.nama_kategori_klinis',
-                'drm.detail'
+                'kk.nama_kategori_klinis'
             )
             ->where('drm.idrekam_medis', $id)
             ->get();
 
-        return view('dashboard.dokter.rekam-medis.show', compact('rekam', 'detailTindakan'));
+        // Master tindakan buat dropdown tambah tindakan
+        $masterTindakan = DB::table('kode_tindakan_terapi as ktt')
+            ->join('kategori_klinis as kk', 'ktt.idkategori_klinis', '=', 'kk.idkategori_klinis')
+            ->select(
+                'ktt.idkode_tindakan_terapi',
+                'ktt.kode',
+                'ktt.deskripsi_tindakan_terapi',
+                'kk.nama_kategori_klinis'
+            )
+            ->orderBy('kk.nama_kategori_klinis')
+            ->orderBy('ktt.kode')
+            ->get();
+
+        return view('dashboard.dokter.rekam-medis.show', compact('rekam', 'detailTindakan', 'masterTindakan'));
     }
 
-    # Form edit rekam medis
+    // Form edit rekam medis
     public function edit($id)
     {
         $rekam = DB::table('rekam_medis')->where('idrekam_medis', $id)->first();
@@ -106,7 +124,7 @@ class RekamMedisController extends Controller
         return view('dashboard.dokter.rekam-medis.edit', compact('rekam', 'pets'));
     }
 
-    # Update rekam medis
+    // Update rekam medis
     public function update(Request $request, $id)
     {
         $this->validateRekamMedis($request);
@@ -125,14 +143,57 @@ class RekamMedisController extends Controller
             ->with('ok', 'Data rekam medis berhasil diperbarui!');
     }
 
-    # Validasi input rekam medis
-    private function validateRekamMedis($request)
+    // Tambah tindakan terapi ke rekam medis
+    public function storeTindakan(Request $request, $rekamId)
+    {
+        $request->validate([
+            'idkode_tindakan_terapi' => 'required|integer|exists:kode_tindakan_terapi,idkode_tindakan_terapi',
+            'detail' => 'nullable|string|max:255',
+        ]);
+
+        $exists = DB::table('rekam_medis')
+            ->where('idrekam_medis', $rekamId)
+            ->exists();
+
+        if (!$exists) {
+            abort(404, 'Rekam medis tidak ditemukan.');
+        }
+
+        DB::table('detail_rekam_medis')->insert([
+            'idrekam_medis' => $rekamId,
+            'idkode_tindakan_terapi' => $request->idkode_tindakan_terapi,
+            'detail' => $this->formatText($request->detail),
+        ]);
+
+        return back()->with('ok', 'Tindakan terapi berhasil ditambahkan.');
+    }
+
+    // Update catatan tindakan
+    public function updateTindakan(Request $request, $rekamId, $detailId)
+    {
+        $request->validate([
+            'detail' => 'nullable|string|max:255',
+        ]);
+
+        DB::table('detail_rekam_medis')
+            ->where('iddetail_rekam_medis', $detailId)
+            ->where('idrekam_medis', $rekamId)
+            ->update([
+                'detail' => $this->formatText($request->detail),
+            ]);
+
+        return back()->with('ok', 'Catatan tindakan berhasil diperbarui.');
+    }
+
+    // Validasi input rekam medis
+    private function validateRekamMedis(Request $request)
     {
         $request->validate([
             'idpet' => 'required|integer',
             'anamnesa' => 'required|string|max:255',
             'temuan_klinis' => 'nullable|string|max:255',
             'diagnosa' => 'required|string|max:255',
+            // tidak perlu validasi idreservasi_dokter lagi, diisi otomatis
         ], [
             'idpet.required' => 'Pilih hewan terlebih dahulu.',
             'anamnesa.required' => 'Anamnesa wajib diisi.',
@@ -140,12 +201,25 @@ class RekamMedisController extends Controller
         ]);
     }
 
-    # Simpan rekam medis baru ke database
-    private function createRekamMedis($request)
+    // Simpan rekam medis baru ke database
+    private function createRekamMedis(Request $request)
     {
+        // dokter yang login (sesuaikan dengan struktur tabel user-mu)
+        $dokterId = Auth::user()->idrole_user ?? Auth::id();
+
+        // cari reservasi terbaru di temu_dokter untuk hewan ini & dokter ini
+        $reservasi = DB::table('temu_dokter')
+            ->where('idpet', $request->idpet)
+            ->where('idrole_user', $dokterId)
+            ->orderByDesc('waktu_daftar')
+            ->first();
+
+        $idreservasi = $reservasi->idreservasi_dokter ?? null;
+
         DB::table('rekam_medis')->insert([
             'idpet' => $request->idpet,
-            'idreservasi_dokter' => null,
+            'dokter_pemeriksa' => $dokterId,
+            'idreservasi_dokter' => $idreservasi, // bisa null kalau tidak ketemu
             'anamnesa' => $this->formatText($request->anamnesa),
             'temuan_klinis' => $this->formatText($request->temuan_klinis),
             'diagnosa' => $this->formatText($request->diagnosa),
@@ -153,10 +227,12 @@ class RekamMedisController extends Controller
         ]);
     }
 
-    # Format teks input
+    // Format teks input
     private function formatText($text)
     {
-        if (!$text) return null;
+        if (!$text) {
+            return null;
+        }
         return ucfirst(strtolower(trim($text)));
     }
 }

@@ -153,12 +153,20 @@ Route::prefix('role-user')->name('role-user.')->group(function () {
 });
 
 
-# DOKTER AREA
+// DOKTER AREA
 Route::prefix('dokter')->middleware(['auth', 'isDokter'])->name('dokter.')->group(function () {
     Route::resource('rekam-medis', DokterRekamMedisController::class)->except(['destroy']);
+
     Route::get('/pasien', [DokterPasienController::class, 'index'])->name('pasien.index');
     Route::get('/profil', [DokterProfilController::class, 'index'])->name('profil.index');
+
+    Route::post('/rekam-medis/{rekam}/tindakan', [DokterRekamMedisController::class, 'storeTindakan'])
+        ->name('rekam-medis.tindakan.store');
+
+    Route::put('/rekam-medis/{rekam}/tindakan/{detail}', [DokterRekamMedisController::class, 'updateTindakan'])
+        ->name('rekam-medis.tindakan.update');
 });
+
 
 # PERAWAT AREA
 Route::prefix('perawat')->middleware(['auth', 'isPerawat'])->name('perawat.')->group(function () {

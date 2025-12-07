@@ -19,7 +19,9 @@
         <select id="idpet" name="idpet" class="w-full border rounded-lg px-3 py-2 mt-1 focus:ring-[#002080]/40 focus:ring-2">
           <option value="">-- Pilih Hewan --</option>
           @foreach($pets as $p)
-            <option value="{{ $p->idpet }}">{{ $p->nama_pet }} — {{ $p->nama_pemilik }}</option>
+            <option value="{{ $p->idpet }}" {{ old('idpet') == $p->idpet ? 'selected' : '' }}>
+              {{ $p->nama_pet }} — {{ $p->nama_pemilik }}
+            </option>
           @endforeach
         </select>
         @error('idpet')
@@ -60,4 +62,3 @@
   </div>
 </section>
 @endsection
-

@@ -2,23 +2,30 @@
 @section('title', 'Tambah Rekam Medis - RSHP UNAIR')
 
 @section('content')
-<section class="min-h-[90vh] bg-[#f5f7ff] flex justify-center items-center">
-  <div class="bg-white shadow-md rounded-xl p-8 w-full max-w-4xl border border-gray-200">
-    <h2 class="text-lg font-bold text-[#002080] mb-1 text-center">Tambah Rekam Medis</h2>
-    <p class="text-xs text-gray-500 mb-5 text-center">
-      Lengkapi data rekam medis sesuai hasil pemeriksaan.
-    </p>
+<section class="min-h-[90vh] bg-[#f5f7ff] flex justify-center items-center py-10 px-4">
+  <div class="bg-white shadow-lg rounded-2xl w-full max-w-4xl border border-gray-200 px-8 py-7">
 
-    {{-- Error Handling --}}
+    {{-- Header --}}
+    <div class="flex items-start justify-between gap-3 mb-5 border-b border-gray-100 pb-4">
+      <div>
+        <h2 class="text-xl font-bold text-[#002080]">➕ Tambah Rekam Medis</h2>
+        <p class="text-xs text-gray-500 mt-1">
+          Lengkapi data rekam medis sesuai hasil pemeriksaan hewan di RSHP UNAIR.
+        </p>
+      </div>
+    </div>
+
+    {{-- Flash & Error --}}
     @if(session('danger'))
-      <div class="bg-red-100 text-red-700 p-3 rounded mb-3 text-center text-sm">
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg mb-3 text-sm text-center">
         {{ session('danger') }}
       </div>
     @endif
 
     @if($errors->any())
-      <div class="bg-red-50 border border-red-300 text-red-700 p-3 rounded mb-4 text-sm">
-        <ul class="list-disc ml-4 space-y-1">
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+        <p class="font-semibold mb-1">Periksa kembali data berikut:</p>
+        <ul class="list-disc ml-5 space-y-0.5">
           @foreach($errors->all() as $e)
             <li>{{ $e }}</li>
           @endforeach
@@ -26,18 +33,25 @@
       </div>
     @endif
 
-    <form method="POST" action="{{ route('admin.rekam-medis.store') }}" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    {{-- Form --}}
+    <form
+      method="POST"
+      action="{{ route('admin.rekam-medis.store') }}"
+      class="grid grid-cols-1 md:grid-cols-2 gap-5"
+    >
       @csrf
 
-      {{-- Reservasi Dokter --}}
-      <div class="md:col-span-2">
-        <label for="select-reservasi" class="block text-sm font-semibold mb-1">
-          Reservasi Dokter (Opsional)
+      {{-- Reservasi Dokter (opsional) --}}
+      <div class="md:col-span-2 space-y-1">
+        <label for="select-reservasi" class="block text-sm font-semibold text-gray-700">
+          Reservasi Dokter <span class="text-[11px] text-gray-400">(opsional)</span>
         </label>
         <select
           name="idreservasi_dokter"
           id="select-reservasi"
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-[#002080] focus:outline-none focus:ring-2 focus:ring-[#002080]/20 transition"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                 text-gray-700 shadow-sm bg-white
+                 focus:outline-none focus:border-[#002080] focus:ring-2 focus:ring-[#00208033]"
         >
           <option value="">-- Pilih Reservasi --</option>
           @foreach($reservasiList as $r)
@@ -51,21 +65,23 @@
             </option>
           @endforeach
         </select>
-        <p class="mt-1 text-[11px] text-gray-400">
-          Jika dipilih, nama hewan dan dokter akan terisi otomatis sesuai reservasi.
+        <p class="text-[11px] text-gray-400">
+          Jika dipilih, nama hewan dan dokter akan terisi otomatis sesuai data reservasi.
         </p>
       </div>
 
       {{-- Nama Hewan --}}
-      <div>
-        <label for="select-pet" class="block text-sm font-semibold mb-1">
+      <div class="space-y-1">
+        <label for="select-pet" class="block text-sm font-semibold text-gray-700">
           Nama Hewan <span class="text-red-500">*</span>
         </label>
         <select
           name="idpet"
           id="select-pet"
           required
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-[#002080] focus:outline-none focus:ring-2 focus:ring-[#002080]/20 transition"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                 text-gray-700 shadow-sm bg-white
+                 focus:outline-none focus:border-[#002080] focus:ring-2 focus:ring-[#00208033]"
         >
           <option value="">-- Pilih Hewan --</option>
           @foreach($pet as $p)
@@ -77,15 +93,17 @@
       </div>
 
       {{-- Dokter Pemeriksa --}}
-      <div>
-        <label for="select-dokter" class="block text-sm font-semibold mb-1">
+      <div class="space-y-1">
+        <label for="select-dokter" class="block text-sm font-semibold text-gray-700">
           Dokter Pemeriksa <span class="text-red-500">*</span>
         </label>
         <select
           name="dokter_pemeriksa"
           id="select-dokter"
           required
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-[#002080] focus:outline-none focus:ring-2 focus:ring-[#002080]/20 transition"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                 text-gray-700 shadow-sm bg-white
+                 focus:outline-none focus:border-[#002080] focus:ring-2 focus:ring-[#00208033]"
         >
           <option value="">-- Pilih Dokter --</option>
           @foreach($dokter as $d)
@@ -97,57 +115,79 @@
       </div>
 
       {{-- Anamnesa --}}
-      <div>
-        <label for="anamnesa" class="block text-sm font-semibold mb-1">Anamnesa</label>
+      <div class="space-y-1">
+        <label for="anamnesa" class="block text-sm font-semibold text-gray-700">
+          Anamnesa
+        </label>
         <textarea
           name="anamnesa"
           id="anamnesa"
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm h-24 resize-y focus:border-[#002080] focus:outline-none focus:ring-2 focus:ring-[#002080]/20 transition"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                 text-gray-700 shadow-sm h-24 resize-y
+                 focus:outline-none focus:border-[#002080] focus:ring-2 focus:ring-[#00208033]"
           placeholder="Keluhan utama, riwayat penyakit, pola makan, dll."
         >{{ old('anamnesa') }}</textarea>
       </div>
 
       {{-- Temuan Klinis --}}
-      <div>
-        <label for="temuan_klinis" class="block text-sm font-semibold mb-1">Temuan Klinis</label>
+      <div class="space-y-1">
+        <label for="temuan_klinis" class="block text-sm font-semibold text-gray-700">
+          Temuan Klinis
+        </label>
         <textarea
           name="temuan_klinis"
           id="temuan_klinis"
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm h-24 resize-y focus:border-[#002080] focus:outline-none focus:ring-2 focus:ring-[#002080]/20 transition"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                 text-gray-700 shadow-sm h-24 resize-y
+                 focus:outline-none focus:border-[#002080] focus:ring-2 focus:ring-[#00208033]"
           placeholder="Hasil pemeriksaan fisik, vital sign, dan temuan lainnya."
         >{{ old('temuan_klinis') }}</textarea>
       </div>
 
       {{-- Diagnosa --}}
-      <div class="md:col-span-2">
-        <label for="diagnosa" class="block text-sm font-semibold mb-1">
+      <div class="md:col-span-2 space-y-1">
+        <label for="diagnosa" class="block text-sm font-semibold text-gray-700">
           Diagnosa <span class="text-red-500">*</span>
         </label>
         <textarea
           name="diagnosa"
           id="diagnosa"
           required
-          class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm h-24 resize-y focus:border-[#002080] focus:outline-none focus:ring-2 focus:ring-[#002080]/20 transition"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm
+                 text-gray-700 shadow-sm h-24 resize-y
+                 focus:outline-none focus:border-[#002080] focus:ring-2 focus:ring-[#00208033]"
           placeholder="Tuliskan diagnosa utama dan diagnosa banding bila diperlukan."
         >{{ old('diagnosa') }}</textarea>
       </div>
 
-      {{-- BUTTONS --}}
-      <div class="md:col-span-2 flex items-center justify-between pt-2">
+      {{-- Tombol Aksi --}}
+      <div class="md:col-span-2 flex items-center justify-between pt-3">
         <a
           href="{{ route('admin.rekam-medis.index') }}"
-          class="text-xs sm:text-sm text-gray-500 hover:text-gray-800"
+          class="inline-flex items-center text-xs md:text-sm text-gray-600 hover:text-gray-800"
         >
-          ← Batal, kembali ke daftar
+          ← Batal &amp; kembali ke daftar
         </a>
-        <button
-          type="submit"
-          class="inline-flex items-center rounded-lg bg-[#002080] px-4 py-2 text-xs sm:text-sm font-medium text-white shadow-sm hover:bg-[#00185e] transition"
-        >
-          Simpan Rekam Medis
-        </button>
+
+        <div class="flex gap-2">
+          <a
+            href="{{ route('admin.rekam-medis.index') }}"
+            class="inline-flex items-center px-4 py-2.5 rounded-lg border border-gray-300 text-xs md:text-sm
+                   font-medium text-gray-700 hover:bg-gray-100"
+          >
+            Batal
+          </a>
+          <button
+            type="submit"
+            class="inline-flex items-center px-5 py-2.5 rounded-lg bg-[#002080] hover:bg-[#00185e]
+                   text-white text-xs md:text-sm font-semibold shadow-sm transition"
+          >
+            Simpan Rekam Medis
+          </button>
+        </div>
       </div>
     </form>
+
   </div>
 </section>
 
