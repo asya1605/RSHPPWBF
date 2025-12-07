@@ -45,7 +45,7 @@
     </p>
 
     <div class="flex flex-col sm:flex-row gap-5 animate-slideRight delay-200">
-      <a href="#" 
+      <a href="{{ route('register') }}" 
          class="btn-gradient-primary text-white px-8 py-4 rounded-2xl shadow-2xl text-center font-bold text-lg hover:scale-105 transform transition-all">
         <span class="relative z-10 flex items-center justify-center gap-2">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -287,10 +287,10 @@
     <h2 class="text-4xl font-black mb-4">Mari Wujudkan Visi Bersama</h2>
     <p class="text-xl text-blue-100 mb-8">Bergabunglah dengan kami dalam memberikan pelayanan kesehatan hewan terbaik</p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a href="#" class="bg-white text-[#002080] px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transform transition-all shadow-2xl">
+      <a href="{{ route('register') }}"  class="bg-white text-[#002080] px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transform transition-all shadow-2xl">
         🐾 Reservasi Sekarang
       </a>
-      <a href="#" class="bg-[#FFD700] text-[#002080] px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transform transition-all shadow-2xl">
+      <a href="https://wa.me/6281234567890"  class="bg-[#FFD700] text-[#002080] px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transform transition-all shadow-2xl">
         📞 Hubungi Kami
       </a>
     </div>

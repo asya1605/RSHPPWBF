@@ -55,31 +55,55 @@ class PemilikController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:100',
-            'email' => 'required|email|unique:pemilik,email',
+            'nama'     => 'required|string|max:100',
+            'email'    => 'required|email|unique:user,email',
             'password' => 'required|min:5',
-            'no_wa' => 'required|string|max:20',
-            'alamat' => 'required|string|max:255',
+            'no_wa'    => 'required|string|max:20',
+            'alamat'   => 'required|string|max:255',
         ]);
 
+        // ambil idrole untuk Pemilik (dari tabel role)
+        $idrolePemilik = DB::table('role')
+            ->where('nama_role', 'Pemilik')
+            ->value('idrole');
+
         try {
-            DB::transaction(function () use ($validated) {
-                DB::table('pemilik')->insert([
-                    'nama' => $validated['nama'],
-                    'email' => $validated['email'],
+            DB::transaction(function () use ($validated, $idrolePemilik) {
+                // 1) buat akun di tabel user
+                $iduser = DB::table('user')->insertGetId([
+                    'nama'     => $validated['nama'],
+                    'email'    => $validated['email'],
                     'password' => bcrypt($validated['password']),
-                    'no_wa' => $validated['no_wa'],
-                    'alamat' => $validated['alamat'],
-                    'created_at' => now(),
+                ]);
+
+                // 2) buat data pemilik, hubungkan ke user lewat id_user
+                DB::table('pemilik')->insert([
+                    'nama'     => $validated['nama'],
+                    'email'    => $validated['email'],
+                    'password' => bcrypt($validated['password']),
+                    'no_wa'    => $validated['no_wa'],
+                    'alamat'   => $validated['alamat'],
+                    'id_user'  => $iduser,
+                ]);
+
+                // 3) KASIH ROLE PEMILIK 🔥
+                DB::table('role_user')->insert([
+                    'iduser' => $iduser,
+                    'idrole' => $idrolePemilik, // misal 5
+                    'status' => 1,
                 ]);
             });
 
-            return $this->redirectWithMessage('admin.pemilik.index', '✅ Pemilik baru berhasil ditambahkan.');
+            return $this->redirectWithMessage(
+                'admin.pemilik.index',
+                '✅ Pemilik baru berhasil ditambahkan.'
+            );
         } catch (\Throwable $e) {
-            Log::error("Error insert pemilik: " . $e->getMessage());
+            Log::error("Error insert pemilik (admin): " . $e->getMessage());
             return back()->withInput()->with('danger', 'Gagal menambahkan data.');
         }
     }
+
 
    # Edit
     public function edit($id)

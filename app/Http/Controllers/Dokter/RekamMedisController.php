@@ -14,6 +14,13 @@ class RekamMedisController extends Controller
     {
         $selectedDate = $request->query('date');
 
+        // cari idrole_user untuk dokter yang lagi login
+        $dokterRoleUserId = DB::table('role_user as ru')
+            ->join('role as r', 'r.idrole', '=', 'ru.idrole')
+            ->where('ru.iduser', Auth::id())
+            ->where('r.nama_role', 'Dokter')
+            ->value('ru.idrole_user');
+
         $list = DB::table('rekam_medis as rm')
             ->leftJoin('temu_dokter as td', 'td.idreservasi_dokter', '=', 'rm.idreservasi_dokter')
             ->join('pet as p', 'p.idpet', '=', 'rm.idpet')
@@ -29,9 +36,19 @@ class RekamMedisController extends Controller
                 'pem.nama as nama_pemilik',
                 DB::raw('(SELECT COUNT(*) FROM detail_rekam_medis drm WHERE drm.idrekam_medis = rm.idrekam_medis) as jml_tindakan')
             )
+
+            // 🔹 FILTER DOKTER YANG LOGIN
+            ->when($dokterRoleUserId, function ($q) use ($dokterRoleUserId) {
+                $q->where('td.idrole_user', $dokterRoleUserId);
+                // atau kalau kamu mau pakai kolom rm.dokter_pemeriksa:
+                // $q->where('rm.dokter_pemeriksa', $dokterRoleUserId);
+            })
+
+            // 🔹 FILTER TANGGAL (kalau dipilih)
             ->when($selectedDate, function ($q) use ($selectedDate) {
                 $q->whereDate('rm.created_at', $selectedDate);
             })
+
             ->orderByRaw('td.no_urut IS NULL') // NULL taruh bawah
             ->orderBy('td.no_urut')
             ->orderBy('rm.created_at')
