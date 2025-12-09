@@ -18,8 +18,10 @@ use App\Http\Controllers\Admin\{
     KategoriKlinisController,
     KodeTindakanTerapiController,
     RekamMedisController,
+    TemuDokterController,   
     RelasiController
 };
+
 use App\Http\Controllers\Dokter\{
     RekamMedisController as DokterRekamMedisController,
     PasienController as DokterPasienController,
@@ -122,6 +124,14 @@ Route::prefix('role-user')->name('role-user.')->group(function () {
 
 });
 
+// Temu Dokter (Admin)
+Route::resource('temu-dokter', TemuDokterController::class)->only([
+    'index', 'store', 'update', 'destroy',
+]);
+
+// Restore antrian (soft delete)
+Route::post('temu-dokter/{id}/restore', [TemuDokterController::class, 'restore'])
+    ->name('temu-dokter.restore');
 
     # Data Master Resources
     Route::resources([
